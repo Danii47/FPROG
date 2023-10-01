@@ -16,4 +16,5 @@
 * clear - Borra el contenido de la terminal
 * rm [fileName] - Para eliminar un archivo.
 * rmdir [directoryName] - Para eliminar un directorio vacio.
-* mv [file1] [file2] - Mover / Cambiar nombre de un archivo
+* mv [file1] [file2] - Mover / Cambiar nombre de un archivo.
+* nano [fileName] - Crea un archivo en caso de no existir y lo abre en la terminal para editarlo.
