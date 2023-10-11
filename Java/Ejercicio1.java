@@ -4,6 +4,7 @@
   segundos desde las doce de la noche de ayer.
 */
 
+
 public class Ejercicio1 {
   public static void main(String[] args) {
     int totalSeconds = 75936;
