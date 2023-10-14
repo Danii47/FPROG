@@ -18,7 +18,7 @@ public class Ejercicio8 {
     in.close();
     System.out.println("Punto (" + x + ", " + y + ")");
     System.out.print("En polares es: ");
-    System.out.println("Radio= " + rad(x, y) + ", ángulo = " + ang(x, y));// EXPRESIONES
+    System.out.println("Radio= " + rad(x, y) + ", ángulo = " + ang(x, y)); // EXPRESIONES
 
   }
 
