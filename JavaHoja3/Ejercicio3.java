@@ -10,6 +10,7 @@
 import java.util.Scanner;
 
 public class Ejercicio3 {
+  
   public static void main(String[] args) {
     System.out.println("Introduce 3 números enteros que correspondan a dia/mes/año: ");
     Scanner in = new Scanner(System.in);

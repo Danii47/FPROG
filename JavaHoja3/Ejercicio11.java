@@ -35,13 +35,13 @@ public class Ejercicio11 {
     }
   }
 
-  public static boolean isTriangle(int firstNumber, int secondNumber, int thirdNumber) {
+  public static boolean isTriangle(int a, int b, int c) {
 
     boolean isTriangle = false;
 
-    if (firstNumber < secondNumber + thirdNumber &&
-        secondNumber < firstNumber + thirdNumber &&
-        thirdNumber < firstNumber + secondNumber) {
+    if (a < b + c &&
+        b < a + c &&
+        c < a + b) {
 
       isTriangle = true;
     }

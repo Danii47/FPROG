@@ -29,5 +29,4 @@ public class Ejercicio8 {
   public static double ang(double x, double y) {
     return Math.atan2(y, x);
   }
-
 }
