@@ -29,5 +29,4 @@ public class PruebaMinimos1 {
 
 		System.out.println(secondsWithDecimals + " (sin decimales) expresado en horas, minutos y segundos es: " + hours + " " + minutes + " " + seconds);
 	}
-
 }
