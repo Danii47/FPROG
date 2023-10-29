@@ -9,11 +9,12 @@ public class PruebaMinimos1 {
 		// Declaro "secondsWithDecimals" como -1 para entrar dentro del bucle while
 		float secondsWithDecimals = -1;
 
-		Mientras el número introducido sea menor que 0, se solicita al usuario el número de nuevo
+		// Mientras el número introducido sea menor que 0, se solicita al usuario el número de nuevo
 		while (secondsWithDecimals < 0) {
 			System.out.println("Introduce un número positivo de segundos:");
 			secondsWithDecimals = in.nextFloat();
 		}
+		in.close();
 
 		// Obtengo el valor entero de los segundos con decimales
 		int seconds = (int) secondsWithDecimals;
