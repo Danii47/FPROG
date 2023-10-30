@@ -14,7 +14,7 @@ import java.util.Scanner;
 
 public class H4Ejercicio05 {
   public static void main(String[] args) {
-    
+
     Scanner in = new Scanner(System.in);
     System.out.println("Introduce un número con el que aplicar la conjetura de Collatz:");
     long number = in.nextLong();
@@ -32,4 +32,3 @@ public class H4Ejercicio05 {
     System.out.println("El programa ha finalizado con " + iterations + " iteraciones. Te ha ganado Collatz ^^.");
   }
 }
-
