@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-public class Hoja5_4 {
+public class H5Ejercicio05 {
     public static void main (String[] args) {
 
         System.out.print("introduce la cantidad de filas: ");
