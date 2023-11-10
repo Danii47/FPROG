@@ -18,6 +18,7 @@ public class H6Ejercicio06 {
 
     System.out.println("Introduce una cadena para comprobar si cumple las condiciones:");
     String str = in.nextLine();
+    in.close();
 
     boolean passConditions = comprobateConditions(str);
 
