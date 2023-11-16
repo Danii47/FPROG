@@ -1,4 +1,4 @@
-# CURSO 23-24 FUNDAMENTSOS DE PROGRAMACIÓN
+# CURSO 23-24 FUNDAMENTOS DE PROGRAMACIÓN
 
 [CAMPUS VIRTUAL](https://campusvirtual.uva.es/ "Acceso al campus virtual")
 
