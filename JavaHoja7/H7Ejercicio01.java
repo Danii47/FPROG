@@ -1,3 +1,8 @@
+/*
+  Elaborar un método para normalizar un vector de números reales, con el criterio de que el
+  nuevo vector resultante tenga módulo 1 (es decir, con la misma dirección pero tamaño 1).
+*/
+
 import java.util.Scanner;
 
 public class H7Ejercicio01 {
