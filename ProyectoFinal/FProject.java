@@ -1,5 +1,7 @@
 import java.util.Scanner;
 
+// TODO: Explicar previousTable(), addTable() y comprobateTable()
+
 public class FProject {
   public static final String ANSI_RESET = "\u001B[0m";
   public static final String ANSI_BLACK = "\u001B[30m";
@@ -10,6 +12,9 @@ public class FProject {
   public static final String ANSI_PURPLE = "\u001B[35m";
   public static final String ANSI_CYAN = "\u001B[36m";
   public static final String ANSI_WHITE = "\u001B[37m";
+  public static final char X = 'x';
+  public static final char O = 'o';
+
 
   public static void main(String[] args) {
     Scanner in = new Scanner(System.in);
@@ -230,16 +235,16 @@ public class FProject {
 
       // La letra más lejana que se puede seleccionar depende de la longitud que tenga
       // la fila del array.
+      int untilInputNumber = '1' + (table.length - 1);
       int untilInputCharacter = 'a' + (table[0].length - 1);
 
-      if ((userInputNumber >= '1' && userInputNumber <= '9')
+      if ((userInputNumber >= '1' && userInputNumber <= untilInputNumber)
           && (userInputCharacter >= 'a' && userInputCharacter <= untilInputCharacter)) {
 
         int userInputNumberInt = (userInputNumber - '0') - 1;
         int userInputCharacterInt = userInputCharacter - 'a';
 
         if (startTable[userInputNumberInt][userInputCharacterInt] == 0) {
-
           switch (table[userInputNumberInt][userInputCharacterInt]) {
             case 0:
               table[userInputNumberInt][userInputCharacterInt] = 2;
@@ -261,10 +266,10 @@ public class FProject {
         }
 
       } else {
-        System.out.println("Entrada erronea.");
+        System.out.println("Entrada erronea. Recuerda que la jugada debe ser una coordenada del tablero.");
       }
     } else {
-      System.out.println("Entrada erronea.");
+      System.out.println("Entrada erronea. Recuerda que la jugada debe ser una coordenada del tablero con longitud 2.");
     }
 
     return validPlay;
@@ -464,7 +469,7 @@ public class FProject {
 
       System.out.println();
       System.out.print((row + 1) + " ");
-
+      
       for (int column = 0; column < table[row].length; column++) {
 
         switch (table[row][column]) {
@@ -472,13 +477,13 @@ public class FProject {
             gapToDraw = ' ';
             break;
           case 1:
-            gapToDraw = 'o';
+            gapToDraw = O;
             break;
           case 2:
-            gapToDraw = 'x';
+            gapToDraw = X;
             break;
           default:
-            gapToDraw = '?';
+            gapToDraw = ' ';
             break;
         }
 
