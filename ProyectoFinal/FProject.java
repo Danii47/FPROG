@@ -15,7 +15,6 @@ public class FProject {
   public static final char X = 'x';
   public static final char O = 'o';
 
-
   public static void main(String[] args) {
     Scanner in = new Scanner(System.in);
 
@@ -26,18 +25,24 @@ public class FProject {
     String startTableString = "002200 002000 000000 001000 200101 100001";
     // String startTableString = "121212 212121 121212 212121 121212 212121";
 
-    int table[][] = createTable(width, height, startTableString);
-    int startTable[][] = createTable(width, height, startTableString);
+    int table[][];
+    int startTable[][];
+    int tables[][][];
 
-    // Inicializo la variable tables para almacenar todos los tableros que van
-    // surgiendo a medida que se juega para, posteriormente, retrodecer las jugadas
-    int tables[][][] = { createTable(width, height, startTableString) };
+    int winGames = 0;
+    int playedGames = 0;
 
-    boolean leftGame = false;
-    String userInput;
+    double winPercentage;
+
+    boolean finishGame = false;
+    boolean leftGame;
+    boolean saveUserData;
     boolean validPlay;
+    String userInput;
+    String continuePlayingAnswer;
+    String saveUserDataAnswer;
+    String userName;
 
-    // TODO: RANKING
     // https://fsymbols.com/generators/wide/
     /*
     System.out.println(ANSI_GREEN
@@ -45,42 +50,96 @@ public class FProject {
         + ANSI_RESET);
     */
 
+    
+
+    while (!finishGame) {
+
+      leftGame = false;
+
+      table = createTable(width, height, startTableString);
+      startTable = createTable(width, height, startTableString);
+
+      // Asigno la variable tables para almacenar todos los tableros que van
+      // surgiendo a medida que se juega para, posteriormente, retrodecer las jugadas
+      tables = createArrayOfTables(startTable);
+
+      do {
+        drawTable(table);
+  
+        System.out.print("Jugada: ");
+        userInput = in.nextLine();
+  
+        switch (userInput) {
+          case "s":
+            leftGame = confirmExit(in);
+            break;
+  
+          case "-":
+            tables = previousTable(table, tables);
+            break;
+  
+          case "":
+            if (comprobateTable(table)) {
+              System.out.println("¡Enhorabuena, has competado el tablero!");
+              winGames++;
+            }
+            playedGames++;
+            leftGame = true;
+            break;
+  
+          default:
+  
+            validPlay = insertPlay(table, startTable, userInput); // TODO: Preguntar sobre buenas prácticas editar una variable dentro de una fn
+            if (validPlay) {
+              tables = addTable(table, tables);
+            }
+            break;
+        }
+      } while(!leftGame);
+        
+      do {
+        System.out.println("¿Quieres jugar otro tablero? (SI/NO)");
+        continuePlayingAnswer = in.nextLine();
+        finishGame = (continuePlayingAnswer.equals("NO") || continuePlayingAnswer.equals("no")) ? true : false; // TODO: uso toLowerCase();
+      } while ((!continuePlayingAnswer.equals("SI") && !continuePlayingAnswer.equals("NO")) && (!continuePlayingAnswer.equals("si") && !continuePlayingAnswer.equals("no")));
+
+    }
+
+    winPercentage = (winGames / playedGames) * 100;
+
+    System.out.println("Partidas jugadas: " + playedGames);
+    System.out.println("Partidas ganadas: " + winGames);
+    System.out.println("Porcentaje de ganadas: " + (Math.round(winPercentage * 100) / 100) + "%");
+
+    System.out.println();
+  
     do {
-      // clearConsole();
-      drawTable(table);
+      System.out.println("¿Quieres guardar tu puntuación? (SI/NO)");
+      saveUserDataAnswer = in.nextLine(); 
+      saveUserData = (saveUserDataAnswer.equals("SI") || saveUserDataAnswer.equals("si")) ? true : false; // TODO: uso toLowerCase();
+    } while ((!saveUserDataAnswer.equals("SI") && !saveUserDataAnswer.equals("NO")) && (!saveUserDataAnswer.equals("si") && !saveUserDataAnswer.equals("no")));
 
-      System.out.print("Jugada: ");
-      userInput = in.nextLine();
+    if (saveUserData) {
+      System.out.print("Introduce tu nombre: ");
+      userName = in.nextLine();
+    }
 
-      switch (userInput) {
-        case "s":
-          leftGame = confirmExit(in);
-          break;
 
-        case "-":
-          tables = previousTable(table, tables);
-          break;
+    // TODO: Puntuaciones guardar en archivo
 
-        case "":
-          if (comprobateTable(table)) {
+    in.close();
+  }
 
-            System.out.println("¡Enhorabuena, has competado el tablero!");
-
-          }
-
-          break;
-
-        default:
-
-          validPlay = insertPlay(table, startTable, userInput); // TODO: Preguntar sobre buenas prácticas editar una variable dentro de una fn
-          if (validPlay)
-            tables = addTable(table, tables);
-
-          break;
-      }
-
-    } while (!leftGame);
-
+  /**
+   * 
+   * Crea un array de las matrices de juego, inicializando está en un array con el tablero incial para ir añadiendo jugadas posteriormente.
+   * 
+   * @param startTable String codificado como indica el enunciado. (más explicado en createTable())
+   * @return Array de matrices de juego
+   */
+  public static int[][][] createArrayOfTables(int[][] startTable) {
+    int[][][] tables = { startTable };
+    return tables;
   }
 
   /**
@@ -132,39 +191,47 @@ public class FProject {
    */
   public static int[][][] previousTable(int[][] table, int[][][] tables) {
 
+    
+    int[][][] newTables = new int[tables.length - 1][table.length][table[0].length];
+    
     // Si tables es <= 1 significa que no hay más tableros hacía atras, solo el del
     // inicio de juego.
-    if (tables.length <= 1)
-      return tables;
+    clearConsole();
 
-    int[][][] newTables = new int[tables.length - 1][table.length][table[0].length];
+    if (tables.length <= 1) {
+      newTables = tables;
+      System.out.println("No hay más jugadas hacía atrás.");
+    } else {
 
-    // Replico el array de matrices tables en un nuevo array de matrices pero sin
-    // añadir el último.
-    for (int i = 0; i < newTables.length; i++) {
-
-      for (int row = 0; row < table.length; row++) {
-
-        for (int column = 0; column < table[0].length; column++) {
-
-          newTables[i][row][column] = tables[i][row][column];
-
+      // Replico el array de matrices tables en un nuevo array de matrices pero sin
+      // añadir el último.
+      for (int i = 0; i < newTables.length; i++) {
+  
+        for (int row = 0; row < table.length; row++) {
+  
+          for (int column = 0; column < table[0].length; column++) {
+  
+            newTables[i][row][column] = tables[i][row][column];
+  
+          }
+  
         }
-
+  
       }
-
+  
+      // Establezco los valores de table al úlimo elemento de newTables, que se trata
+      // del tablero de la anterior jugada
+      for (int row = 0; row < table.length; row++) {
+  
+        for (int column = 0; column < table[0].length; column++) {
+  
+          table[row][column] = newTables[newTables.length - 1][row][column];
+  
+        }
+      }
+      
     }
 
-    // Establezco los valores de table al úlimo elemento de newTables, que se trata
-    // del tablero de la anterior jugada
-    for (int row = 0; row < table.length; row++) {
-
-      for (int column = 0; column < table[0].length; column++) {
-
-        table[row][column] = newTables[newTables.length - 1][row][column];
-
-      }
-    }
 
     return newTables;
   }
@@ -202,6 +269,8 @@ public class FProject {
    */
   public static boolean confirmExit(Scanner in) {
 
+    clearConsole();
+
     System.out.println("Estas seguro de que quieres salir? (s -> sí | n -> cancelar)");
     String confirmExitStr = in.nextLine();
 
@@ -209,7 +278,8 @@ public class FProject {
 
     if (confirmExit)
       System.out.println("¡Que te vaya bien!");
-
+    else
+      clearConsole();
     return confirmExit;
   }
 
@@ -227,6 +297,8 @@ public class FProject {
   public static boolean insertPlay(int[][] table, int[][] startTable, String userInput) {
 
     boolean validPlay = false;
+
+    clearConsole();
 
     if (userInput.length() == 2) {
 
@@ -314,19 +386,20 @@ public class FProject {
             break;
           default:
             validTable = false;
+            System.out.println("Había alguna casilla vacia, ¡has perdido!");
             break;
         }
 
         if (xAdjacentCont > 2 || xAdjacentCont > 2) {
           System.out.println(
-              "En la posición " + (row + 1) + ((char) ('A' + column)) + " hay un tercer simbolo contiguo en fila.");
+              "En la posición " + (row + 1) + ((char) ('A' + column)) + " hay un tercer simbolo contiguo en fila, ¡has perdido!");
           validTable = false;
         }
 
       }
 
       if (xCont != oCont) {
-        System.out.println("La fila " + (row + 1) + " no tiene el mismo número de X y 0.");
+        System.out.println("La fila " + (row + 1) + " no tiene el mismo número de X y 0, ¡has perdido!");
         validTable = false;
       }
 
@@ -339,7 +412,7 @@ public class FProject {
         }
 
         if (sameValueCont >= table[row].length) {
-          System.out.println("La fila " + (row + 1) + " y la fila " + (auxRow + 1) + " son iguales.");
+          System.out.println("La fila " + (row + 1) + " y la fila " + (auxRow + 1) + " son iguales, ¡has perdido!");
           validTable = false;
         } else {
           sameValueCont = 0;
@@ -378,26 +451,26 @@ public class FProject {
 
         if (oAdjacentCont > 2 || xAdjacentCont > 2) {
           System.out.println(
-              "En la posición " + (row + 1) + ((char) ('A' + column)) + " hay un tercer simbolo contiguo en columna.");
+              "En la posición " + (row + 1) + ((char) ('A' + column)) + " hay un tercer simbolo contiguo en columna, ¡has perdido!");
           validTable = false;
         }
       }
 
       if (xCont != oCont) {
-        System.out.println("La columna " + ((char) ('A' + column)) + " no tiene el mismo número de X y 0.");
+        System.out.println("La columna " + ((char) ('A' + column)) + " no tiene el mismo número de X y 0, ¡has perdido!");
         validTable = false;
       }
 
       for (int auxColumn = 0; auxColumn < table[0].length && validTable; auxColumn++) {
 
         for (int row = 0; row < table.length && validTable; row++) {
-          
+
           if (column != auxColumn && table[row][column] == table[row][auxColumn])
             sameValueCont++;
         }
 
         if (sameValueCont >= table.length) {
-          System.out.println("La columna " + (column + 1) + " y la columna " + (auxColumn + 1) + " son iguales.");
+          System.out.println("La columna " + (column + 1) + " y la columna " + (auxColumn + 1) + " son iguales, ¡has perdido!");
           validTable = false;
         } else {
           sameValueCont = 0;
@@ -469,7 +542,7 @@ public class FProject {
 
       System.out.println();
       System.out.print((row + 1) + " ");
-      
+
       for (int column = 0; column < table[row].length; column++) {
 
         switch (table[row][column]) {
