@@ -204,8 +204,8 @@ public class FProject {
     final int height = 6;
 
     // String startTableString = "111222 221121 112212 221121 112212 221121";
-    String startTableString = "002200 002000 000000 001000 200101 100001";
-    // String startTableString = "121212 212121 121212 212121 121212 212121";
+    // String startTableString = "212121 221210 121122 212112 121221 112212";
+    String startTableString = "002000 000000 100120 000100 000020 110200";
 
     int table[][];
     int startTable[][];
@@ -220,10 +220,15 @@ public class FProject {
     boolean leftGame;
     boolean saveUserData;
     boolean validPlay;
+    
     String userInput;
     String continuePlayingAnswer;
     String saveUserDataAnswer;
     String userName;
+
+
+
+
 
     // https://fsymbols.com/generators/wide/
     /*
@@ -258,20 +263,29 @@ public class FProject {
           case "-":
             tables = previousTable(table, tables);
             break;
+  
+          case "reiniciar":
+            table = createTable(width, height, startTableString);
+            tables = createArrayOfTables(startTable);
+            break;
 
-          case "": // TODO: DEBE FUNCIONAR SI NO ESTÁ COMPLETO?
-            if (comprobateTable(table)) {
-              System.out.println("¡Enhorabuena, has competado el tablero!");
-              winGames++;
+          case "?":
+            getHint(table, startTable);
+            break;
+
+          case "":
+            if (isFullTable(table)) {
+              if (comprobateTable(table, true)) {
+                System.out.println("¡Enhorabuena, has competado el tablero!");
+                winGames++;
+              }
+              playedGames++;
+              leftGame = true;
             }
-            playedGames++;
-            leftGame = true;
             break;
 
           default:
-
-            validPlay = insertPlay(table, startTable, userInput); // TODO: Preguntar sobre buenas prácticas editar una
-                                                                  // variable dentro de una fn
+            validPlay = insertPlay(table, startTable, userInput); // TODO: Preguntar sobre buenas prácticas editar una variable dentro de una fn
             if (validPlay) {
               tables = addTable(table, tables);
             }
@@ -290,7 +304,7 @@ public class FProject {
 
     }
 
-    winPercentage = (winGames / playedGames) * 100;
+    winPercentage = ((double) winGames / playedGames) * 100;
 
     System.out.println("Partidas jugadas: " + playedGames);
     System.out.println("Partidas ganadas: " + winGames);
@@ -314,6 +328,12 @@ public class FProject {
     // TODO: Puntuaciones guardar en archivo
 
     in.close();
+  }
+
+  public static void getHint(int[][] table, int[][] startTable) {
+      
+    // TODO: deberia dar una pista que 100 por 100 correcta o simplemente una pista que no rompa la partida?
+
   }
 
   /**
@@ -542,7 +562,7 @@ public class FProject {
    * @param table Matriz rellenada del juego
    * @return
    */
-  public static boolean comprobateTable(int[][] table) {
+  public static boolean comprobateTable(int[][] table, boolean notifyUser) {
 
     final int O = 1;
     final int X = 2;
@@ -572,21 +592,22 @@ public class FProject {
             break;
           default:
             validTable = false;
-            System.out.println("Había alguna casilla vacia, ¡has perdido!");
+            if (notifyUser)
+              System.out.println("Había alguna casilla vacia, ¡has perdido!"); // TODO: Debe dejar comprobar tablero con alguna vacia?
             break;
         }
 
         if (xAdjacentCont > 2 || xAdjacentCont > 2) {
-          System.out.println(
-              "En la posición " + (row + 1) + ((char) ('A' + column))
-                  + " hay un tercer simbolo contiguo en fila, ¡has perdido!");
+          if (notifyUser)
+            System.out.println("En la posición " + (row + 1) + ((char) ('A' + column)) + " hay un tercer simbolo contiguo en fila, ¡has perdido!");
           validTable = false;
         }
 
       }
 
       if (xCont != oCont) {
-        System.out.println("La fila " + (row + 1) + " no tiene el mismo número de X y 0, ¡has perdido!");
+        if (notifyUser)
+          System.out.println("La fila " + (row + 1) + " no tiene el mismo número de X y O, ¡has perdido!");
         validTable = false;
       }
 
@@ -599,7 +620,8 @@ public class FProject {
         }
 
         if (sameValueCont >= table[row].length) {
-          System.out.println("La fila " + (row + 1) + " y la fila " + (auxRow + 1) + " son iguales, ¡has perdido!");
+          if (notifyUser)
+            System.out.println("La fila " + (row + 1) + " y la fila " + (auxRow + 1) + " son iguales, ¡has perdido!");
           validTable = false;
         } else {
           sameValueCont = 0;
@@ -637,16 +659,15 @@ public class FProject {
         }
 
         if (oAdjacentCont > 2 || xAdjacentCont > 2) {
-          System.out.println(
-              "En la posición " + (row + 1) + ((char) ('A' + column))
-                  + " hay un tercer simbolo contiguo en columna, ¡has perdido!");
+          if (notifyUser)
+            System.out.println("En la posición " + (row + 1) + ((char) ('A' + column)) + " hay un tercer simbolo contiguo en columna, ¡has perdido!");
           validTable = false;
         }
       }
 
       if (xCont != oCont) {
-        System.out
-            .println("La columna " + ((char) ('A' + column)) + " no tiene el mismo número de X y 0, ¡has perdido!");
+        if (notifyUser)
+          System.out.println("La columna " + ((char) ('A' + column)) + " no tiene el mismo número de X y 0, ¡has perdido!");
         validTable = false;
       }
 
@@ -659,8 +680,8 @@ public class FProject {
         }
 
         if (sameValueCont >= table.length) {
-          System.out.println(
-              "La columna " + (column + 1) + " y la columna " + (auxColumn + 1) + " son iguales, ¡has perdido!");
+          if (notifyUser)
+            System.out.println("La columna " + (column + 1) + " y la columna " + (auxColumn + 1) + " son iguales, ¡has perdido!");
           validTable = false;
         } else {
           sameValueCont = 0;
