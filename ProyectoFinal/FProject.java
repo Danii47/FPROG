@@ -131,7 +131,7 @@ public class FProject {
       downSecondAdjacentValue = 0;
 
     }
-    solved = comprobateTable(solvedTable);
+    solved = comprobateTable(solvedTable, false);
     // if (!solved) {
     // solvedTable = new int[table.length][table[0].length];
 
