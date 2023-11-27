@@ -1,19 +1,201 @@
 import java.util.Scanner;
 
 // TODO: Explicar previousTable(), addTable() y comprobateTable()
+// TODO: Poder guardar partidas a medias?
 
 public class FProject {
-  public static final String ANSI_RESET = "\u001B[0m";
-  public static final String ANSI_BLACK = "\u001B[30m";
-  public static final String ANSI_RED = "\u001B[31m";
-  public static final String ANSI_GREEN = "\u001B[32m";
-  public static final String ANSI_YELLOW = "\u001B[33m";
-  public static final String ANSI_BLUE = "\u001B[34m";
-  public static final String ANSI_PURPLE = "\u001B[35m";
-  public static final String ANSI_CYAN = "\u001B[36m";
-  public static final String ANSI_WHITE = "\u001B[37m";
   public static final char X = 'x';
   public static final char O = 'o';
+  public static final int valueToChangeCase = 'a' - 'A';
+
+  public static int[][] getTableSolved(int[][] table) {
+    int[][] solvedTable = new int[table.length][table[0].length];
+
+    for (int row = 0; row < table.length; row++) {
+      for (int column = 0; column < table[row].length; column++) {
+        solvedTable[row][column] = table[row][column];
+      }
+    }
+
+    int xCount = 0;
+    int oCount = 0;
+    int xColumnCount = 0;
+    int oColumnCount = 0;
+    int rightFirstAdjacentValue = 0;
+    int rightSecondAdjacentValue = 0;
+    int leftFirstAdjacentValue = 0;
+    int leftSecondAdjacentValue = 0;
+    int upFirstAdjacentValue = 0;
+    int upSecondAdjacentValue = 0;
+    int downFirstAdjacentValue = 0;
+    int downSecondAdjacentValue = 0;
+    boolean canPlaceX = false;
+    boolean canPlaceO = false;
+    boolean solved = false;
+
+    // while (!solved) {
+    for (int row = 0; row < table.length; row++) {
+
+      // canPlaceO = (solvedTable.length / 2) - oCount;
+      // canPlaceX = (solvedTable.length / 2) - xCount;
+
+      for (int column = 0; column < table[row].length; column++) {
+
+        for (int auxColumn = 0; auxColumn < table[row].length; auxColumn++) {
+          switch (solvedTable[row][auxColumn]) {
+            case 1:
+              oCount++;
+              break;
+            case 2:
+              xCount++;
+              break;
+          }
+        }
+        for (int auxRow = 0; auxRow < table[row].length; auxRow++) {
+          if (solvedTable[auxRow][column] == 1) {
+            oColumnCount++;
+          } else if (solvedTable[auxRow][column] == 2) {
+            xColumnCount++;
+          }
+        }
+        System.out.println("oColumnCount: " + oColumnCount + " | xColumnCount: " + xColumnCount);
+        System.out.println("oCount: " + oCount + " | xCount: " + xCount);
+        System.out.println("");
+
+        if (oCount < table.length / 2 && oColumnCount < table.length / 2) {
+          canPlaceO = true;
+        }
+        if (xCount < table.length / 2 && xColumnCount < table.length / 2) {
+          canPlaceX = true;
+        }
+
+        if (column < table[row].length - 1) {
+          rightFirstAdjacentValue = solvedTable[row][column + 1];
+          if (column < solvedTable[row].length - 2)
+            rightSecondAdjacentValue = solvedTable[row][column + 2];
+        }
+
+        if (column > 0) {
+          leftFirstAdjacentValue = solvedTable[row][column - 1];
+          if (column > 1)
+            leftSecondAdjacentValue = solvedTable[row][column - 2];
+        }
+
+        if (row < solvedTable.length - 1) {
+          downFirstAdjacentValue = solvedTable[row + 1][column];
+          if (row < solvedTable.length - 2)
+            downSecondAdjacentValue = solvedTable[row + 2][column];
+        }
+
+        if (row > 0) {
+          upFirstAdjacentValue = solvedTable[row - 1][column];
+          if (row > 1)
+            upSecondAdjacentValue = solvedTable[row - 2][column];
+        }
+
+        if (solvedTable[row][column] == 0) {
+          if (((rightFirstAdjacentValue != 1 || rightSecondAdjacentValue != 1) &&
+          (leftFirstAdjacentValue != 1 || leftSecondAdjacentValue != 1) &&
+          (upFirstAdjacentValue != 1 || upSecondAdjacentValue != 1) &&
+          (downFirstAdjacentValue != 1 || downSecondAdjacentValue != 1) &&
+          (rightFirstAdjacentValue != 1 || leftFirstAdjacentValue != 1) &&
+          (upFirstAdjacentValue != 1 || downFirstAdjacentValue != 1)) && canPlaceO) {
+            solvedTable[row][column] = 1;
+            canPlaceO = false;
+          }
+          else if (((rightFirstAdjacentValue != 2 || rightSecondAdjacentValue != 2) &&
+              (leftFirstAdjacentValue != 2 || leftSecondAdjacentValue != 2) &&
+              (upFirstAdjacentValue != 2 || upSecondAdjacentValue != 2) &&
+              (downFirstAdjacentValue != 2 || downSecondAdjacentValue != 2) &&
+              (rightFirstAdjacentValue != 2 || leftFirstAdjacentValue != 2) &&
+              (upFirstAdjacentValue != 2 || downFirstAdjacentValue != 2)) && canPlaceX) {
+            solvedTable[row][column] = 2;
+            canPlaceX = false;
+          }
+        oColumnCount = 0;
+        xColumnCount = 0;
+        xCount = 0;
+        oCount = 0;
+        canPlaceO = false;
+        canPlaceX = false;
+        }
+      }
+
+      rightFirstAdjacentValue = 0;
+      rightSecondAdjacentValue = 0;
+      leftFirstAdjacentValue = 0;
+      leftSecondAdjacentValue = 0;
+      upFirstAdjacentValue = 0;
+      upSecondAdjacentValue = 0;
+      downFirstAdjacentValue = 0;
+      downSecondAdjacentValue = 0;
+
+    }
+    solved = comprobateTable(solvedTable);
+    // if (!solved) {
+    // solvedTable = new int[table.length][table[0].length];
+
+    // for (int row = 0; row < table.length; row++) {
+    // for (int column = 0; column < table[row].length; column++) {
+    // solvedTable[row][column] = table[row][column];
+    // }
+
+    // for (int column = 0; column < table[row].length; column++) {
+
+    // if (column < table[row].length - 1) {
+    // rightFirstAdjacentValue = solvedTable[row][column + 1];
+    // if (column < solvedTable[row].length - 2)
+    // rightSecondAdjacentValue = solvedTable[row][column + 2];
+    // }
+
+    // if (column > 0) {
+    // leftFirstAdjacentValue = solvedTable[row][column - 1];
+    // if (column > 1)
+    // leftSecondAdjacentValue = solvedTable[row][column - 2];
+    // }
+
+    // if (row < solvedTable.length - 1) {
+    // downFirstAdjacentValue = solvedTable[row + 1][column];
+    // if (row < solvedTable.length - 2)
+    // downSecondAdjacentValue = solvedTable[row + 2][column];
+    // }
+
+    // if (row > 0) {
+    // upFirstAdjacentValue = solvedTable[row - 1][column];
+    // if (row > 1)
+    // upSecondAdjacentValue = solvedTable[row - 2][column];
+    // }
+
+    // if (solvedTable[row][column] == 0) {
+    // if (((rightFirstAdjacentValue == 0 && rightSecondAdjacentValue == 0) &&
+    // (leftFirstAdjacentValue != 2 && leftSecondAdjacentValue != 0) &&
+    // (upFirstAdjacentValue != 2 && upSecondAdjacentValue != 2) &&
+    // (downFirstAdjacentValue != 2 && downSecondAdjacentValue != 2) &&
+    // (rightFirstAdjacentValue != 2 && leftFirstAdjacentValue != 2) &&
+    // (upFirstAdjacentValue != 2 && downFirstAdjacentValue != 2)) && canPlaceO > 0)
+    // {
+
+    // solvedTable[row][column] = 2;
+    // oCount--;
+    // }
+    // }
+    // }
+    // }
+
+    // }
+    // }
+
+    for (int row = 0; row < solvedTable.length; row++) {
+      for (int column = 0; column < solvedTable[row].length; column++) {
+        System.out.print(solvedTable[row][column] + " ");
+      }
+      System.out.println();
+    }
+
+    drawTable(solvedTable);
+
+    return table;
+  }
 
   public static void main(String[] args) {
     Scanner in = new Scanner(System.in);
@@ -45,12 +227,11 @@ public class FProject {
 
     // https://fsymbols.com/generators/wide/
     /*
-    System.out.println(ANSI_GREEN
-        + "\n██████╗░░█████╗░███╗░░██╗██╗░░██╗██╗███╗░░██╗░██████╗░\n██╔══██╗██╔══██╗████╗░██║██║░██╔╝██║████╗░██║██╔════╝░\n██████╔╝███████║██╔██╗██║█████═╝░██║██╔██╗██║██║░░██╗░\n██╔══██╗██╔══██║██║╚████║██╔═██╗░██║██║╚████║██║░░╚██╗\n██║░░██║██║░░██║██║░╚███║██║░╚██╗██║██║░╚███║╚██████╔╝\n╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░\n"
-        + ANSI_RESET);
-    */
-
-    
+     * System.out.println(ANSI_GREEN
+     * +
+     * "\n██████╗░░█████╗░███╗░░██╗██╗░░██╗██╗███╗░░██╗░██████╗░\n██╔══██╗██╔══██╗████╗░██║██║░██╔╝██║████╗░██║██╔════╝░\n██████╔╝███████║██╔██╗██║█████═╝░██║██╔██╗██║██║░░██╗░\n██╔══██╗██╔══██║██║╚████║██╔═██╗░██║██║╚████║██║░░╚██╗\n██║░░██║██║░░██║██║░╚███║██║░╚██╗██║██║░╚███║╚██████╔╝\n╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░\n"
+     * + ANSI_RESET);
+     */
 
     while (!finishGame) {
 
@@ -58,27 +239,27 @@ public class FProject {
 
       table = createTable(width, height, startTableString);
       startTable = createTable(width, height, startTableString);
-
+      getTableSolved(startTable);
       // Asigno la variable tables para almacenar todos los tableros que van
       // surgiendo a medida que se juega para, posteriormente, retrodecer las jugadas
       tables = createArrayOfTables(startTable);
 
       do {
         drawTable(table);
-  
+
         System.out.print("Jugada: ");
         userInput = in.nextLine();
-  
+
         switch (userInput) {
           case "s":
             leftGame = confirmExit(in);
             break;
-  
+
           case "-":
             tables = previousTable(table, tables);
             break;
-  
-          case "":
+
+          case "": // TODO: DEBE FUNCIONAR SI NO ESTÁ COMPLETO?
             if (comprobateTable(table)) {
               System.out.println("¡Enhorabuena, has competado el tablero!");
               winGames++;
@@ -86,22 +267,26 @@ public class FProject {
             playedGames++;
             leftGame = true;
             break;
-  
+
           default:
-  
-            validPlay = insertPlay(table, startTable, userInput); // TODO: Preguntar sobre buenas prácticas editar una variable dentro de una fn
+
+            validPlay = insertPlay(table, startTable, userInput); // TODO: Preguntar sobre buenas prácticas editar una
+                                                                  // variable dentro de una fn
             if (validPlay) {
               tables = addTable(table, tables);
             }
             break;
         }
-      } while(!leftGame);
-        
+      } while (!leftGame);
+
       do {
         System.out.println("¿Quieres jugar otro tablero? (SI/NO)");
         continuePlayingAnswer = in.nextLine();
-        finishGame = (continuePlayingAnswer.equals("NO") || continuePlayingAnswer.equals("no")) ? true : false; // TODO: uso toLowerCase();
-      } while ((!continuePlayingAnswer.equals("SI") && !continuePlayingAnswer.equals("NO")) && (!continuePlayingAnswer.equals("si") && !continuePlayingAnswer.equals("no")));
+        finishGame = (continuePlayingAnswer.equals("NO") || continuePlayingAnswer.equals("no")) ? true : false; // TODO:
+                                                                                                                // uso
+                                                                                                                // toLowerCase();
+      } while ((!continuePlayingAnswer.equals("SI") && !continuePlayingAnswer.equals("NO"))
+          && (!continuePlayingAnswer.equals("si") && !continuePlayingAnswer.equals("no")));
 
     }
 
@@ -112,18 +297,19 @@ public class FProject {
     System.out.println("Porcentaje de ganadas: " + (Math.round(winPercentage * 100) / 100) + "%");
 
     System.out.println();
-  
+
     do {
       System.out.println("¿Quieres guardar tu puntuación? (SI/NO)");
-      saveUserDataAnswer = in.nextLine(); 
-      saveUserData = (saveUserDataAnswer.equals("SI") || saveUserDataAnswer.equals("si")) ? true : false; // TODO: uso toLowerCase();
-    } while ((!saveUserDataAnswer.equals("SI") && !saveUserDataAnswer.equals("NO")) && (!saveUserDataAnswer.equals("si") && !saveUserDataAnswer.equals("no")));
+      saveUserDataAnswer = in.nextLine();
+      saveUserData = (saveUserDataAnswer.equals("SI") || saveUserDataAnswer.equals("si")) ? true : false; // TODO: uso
+                                                                                                          // toLowerCase();
+    } while ((!saveUserDataAnswer.equals("SI") && !saveUserDataAnswer.equals("NO"))
+        && (!saveUserDataAnswer.equals("si") && !saveUserDataAnswer.equals("no")));
 
     if (saveUserData) {
       System.out.print("Introduce tu nombre: ");
       userName = in.nextLine();
     }
-
 
     // TODO: Puntuaciones guardar en archivo
 
@@ -132,9 +318,11 @@ public class FProject {
 
   /**
    * 
-   * Crea un array de las matrices de juego, inicializando está en un array con el tablero incial para ir añadiendo jugadas posteriormente.
+   * Crea un array de las matrices de juego, inicializando está en un array con el
+   * tablero incial para ir añadiendo jugadas posteriormente.
    * 
-   * @param startTable String codificado como indica el enunciado. (más explicado en createTable())
+   * @param startTable String codificado como indica el enunciado. (más explicado
+   *                   en createTable())
    * @return Array de matrices de juego
    */
   public static int[][][] createArrayOfTables(int[][] startTable) {
@@ -191,9 +379,8 @@ public class FProject {
    */
   public static int[][][] previousTable(int[][] table, int[][][] tables) {
 
-    
     int[][][] newTables = new int[tables.length - 1][table.length][table[0].length];
-    
+
     // Si tables es <= 1 significa que no hay más tableros hacía atras, solo el del
     // inicio de juego.
     clearConsole();
@@ -206,32 +393,31 @@ public class FProject {
       // Replico el array de matrices tables en un nuevo array de matrices pero sin
       // añadir el último.
       for (int i = 0; i < newTables.length; i++) {
-  
+
         for (int row = 0; row < table.length; row++) {
-  
+
           for (int column = 0; column < table[0].length; column++) {
-  
+
             newTables[i][row][column] = tables[i][row][column];
-  
+
           }
-  
+
         }
-  
+
       }
-  
+
       // Establezco los valores de table al úlimo elemento de newTables, que se trata
       // del tablero de la anterior jugada
       for (int row = 0; row < table.length; row++) {
-  
+
         for (int column = 0; column < table[0].length; column++) {
-  
+
           table[row][column] = newTables[newTables.length - 1][row][column];
-  
+
         }
       }
-      
-    }
 
+    }
 
     return newTables;
   }
@@ -392,7 +578,8 @@ public class FProject {
 
         if (xAdjacentCont > 2 || xAdjacentCont > 2) {
           System.out.println(
-              "En la posición " + (row + 1) + ((char) ('A' + column)) + " hay un tercer simbolo contiguo en fila, ¡has perdido!");
+              "En la posición " + (row + 1) + ((char) ('A' + column))
+                  + " hay un tercer simbolo contiguo en fila, ¡has perdido!");
           validTable = false;
         }
 
@@ -451,13 +638,15 @@ public class FProject {
 
         if (oAdjacentCont > 2 || xAdjacentCont > 2) {
           System.out.println(
-              "En la posición " + (row + 1) + ((char) ('A' + column)) + " hay un tercer simbolo contiguo en columna, ¡has perdido!");
+              "En la posición " + (row + 1) + ((char) ('A' + column))
+                  + " hay un tercer simbolo contiguo en columna, ¡has perdido!");
           validTable = false;
         }
       }
 
       if (xCont != oCont) {
-        System.out.println("La columna " + ((char) ('A' + column)) + " no tiene el mismo número de X y 0, ¡has perdido!");
+        System.out
+            .println("La columna " + ((char) ('A' + column)) + " no tiene el mismo número de X y 0, ¡has perdido!");
         validTable = false;
       }
 
@@ -470,7 +659,8 @@ public class FProject {
         }
 
         if (sameValueCont >= table.length) {
-          System.out.println("La columna " + (column + 1) + " y la columna " + (auxColumn + 1) + " son iguales, ¡has perdido!");
+          System.out.println(
+              "La columna " + (column + 1) + " y la columna " + (auxColumn + 1) + " son iguales, ¡has perdido!");
           validTable = false;
         } else {
           sameValueCont = 0;
