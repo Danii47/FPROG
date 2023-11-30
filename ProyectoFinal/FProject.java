@@ -2,6 +2,8 @@ import java.util.Scanner;
 
 // TODO: Explicar previousTable(), addTable() y comprobateTable()
 // TODO: Poder guardar partidas a medias?
+// TODO: MAYUSCULAS Y MINUSCULAS PARA DIFERENCIAR LAS INCIALES
+
 
 public class FProject {
   public static final char X = 'x';
@@ -295,10 +297,9 @@ public class FProject {
 
       do {
         System.out.println("¿Quieres jugar otro tablero? (SI/NO)");
-        continuePlayingAnswer = in.nextLine();
-        finishGame = (continuePlayingAnswer.equals("NO") || continuePlayingAnswer.equals("no")) ? true : false; // TODO:
-                                                                                                                // uso
-                                                                                                                // toLowerCase();
+        continuePlayingAnswer = myToLowerCase(in.nextLine());
+        finishGame = (continuePlayingAnswer.equals("no")) ? true : false;
+
       } while ((!continuePlayingAnswer.equals("SI") && !continuePlayingAnswer.equals("NO"))
           && (!continuePlayingAnswer.equals("si") && !continuePlayingAnswer.equals("no")));
 
@@ -314,11 +315,10 @@ public class FProject {
 
     do {
       System.out.println("¿Quieres guardar tu puntuación? (SI/NO)");
-      saveUserDataAnswer = in.nextLine();
-      saveUserData = (saveUserDataAnswer.equals("SI") || saveUserDataAnswer.equals("si")) ? true : false; // TODO: uso
-                                                                                                          // toLowerCase();
-    } while ((!saveUserDataAnswer.equals("SI") && !saveUserDataAnswer.equals("NO"))
-        && (!saveUserDataAnswer.equals("si") && !saveUserDataAnswer.equals("no")));
+      saveUserDataAnswer = myToLowerCase(in.nextLine());
+      saveUserData = (saveUserDataAnswer.equals("si")) ? true : false;
+
+    } while (!saveUserDataAnswer.equals("si") && !saveUserDataAnswer.equals("no"));
 
     if (saveUserData) {
       System.out.print("Introduce tu nombre: ");
@@ -333,7 +333,22 @@ public class FProject {
   public static void getHint(int[][] table, int[][] startTable) {
       
     // TODO: deberia dar una pista que 100 por 100 correcta o simplemente una pista que no rompa la partida?
+    // TODO: pista que no rompa la partida, implementación -> que sea 100 por 100 correcta
 
+  }
+
+  public static String myToLowerCase(String str) {
+
+    String newStr = "";
+
+    for (int i = 0; i < str.length(); i++) {
+      if (str.charAt(i) >= 'A' && str.charAt(i) <= 'Z')
+        newStr += str.charAt(i) + valueToChangeCase;
+      else
+        newStr += str.charAt(i);
+    }
+
+    return newStr;
   }
 
   /**
@@ -509,7 +524,7 @@ public class FProject {
     if (userInput.length() == 2) {
 
       char userInputNumber = userInput.charAt(0);
-      char userInputCharacter = userInput.toLowerCase().charAt(1); // TODO: Preguntar sobre uso de toLowerCase()
+      char userInputCharacter = myToLowerCase(userInput).charAt(0);
 
       // La letra más lejana que se puede seleccionar depende de la longitud que tenga
       // la fila del array.
@@ -593,7 +608,7 @@ public class FProject {
           default:
             validTable = false;
             if (notifyUser)
-              System.out.println("Había alguna casilla vacia, ¡has perdido!"); // TODO: Debe dejar comprobar tablero con alguna vacia?
+              System.out.println("Había alguna casilla vacia, ¡has perdido!"); // TODO: Debe dejar comprobar tablero con alguna vacia? SI; PERO NO DARLE EL JUEGO POR PERDIDO
             break;
         }
 
