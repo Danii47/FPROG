@@ -228,10 +228,6 @@ public class FProject {
     String saveUserDataAnswer;
     String userName;
 
-
-
-
-
     // https://fsymbols.com/generators/wide/
     /*
      * System.out.println(ANSI_GREEN
