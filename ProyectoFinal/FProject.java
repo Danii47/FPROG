@@ -620,7 +620,6 @@ public class FProject {
 
     // Si tables es <= 1 significa que no hay más tableros hacía atras, solo el del
     // inicio de juego.
-    clearConsole();
 
     if (tables.length <= 1) {
       newTables = tables;
@@ -692,8 +691,6 @@ public class FProject {
    */
   public static boolean confirmExit(Scanner in) {
 
-    clearConsole();
-
     System.out.println("Estas seguro de que quieres salir? (s -> sí | n -> cancelar)");
     String confirmExitStr = in.nextLine();
 
@@ -701,14 +698,11 @@ public class FProject {
 
     if (confirmExit)
       System.out.println("¡Que te vaya bien!");
-    else
-      clearConsole();
+
     return confirmExit;
   }
 
   public static boolean confirmSaveGame(Scanner in) {
-
-    clearConsole();
 
     System.out.println("¿Quieres guardar la partida? (s -> sí | n -> no)");
     String confirmSaveGameStr;
@@ -719,7 +713,6 @@ public class FProject {
 
     boolean confirmSaveGame = confirmSaveGameStr.equals("s") ? true : false;
 
-    clearConsole();
     return confirmSaveGame;
   }
 
@@ -737,8 +730,6 @@ public class FProject {
   public static boolean insertPlay(int[][] table, int[][] startTable, String userInput) {
 
     boolean validPlay = false;
-
-    clearConsole();
 
     if (userInput.length() == 2) {
 
