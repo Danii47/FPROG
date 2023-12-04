@@ -5,7 +5,6 @@ import java.util.Scanner;
 
 // https://fsymbols.com/generators/wide/
 // TODO: Explicar previousTable(), addTable() y comprobateTable()
-// TODO: Recuperar tablero guardado
 // TODO: MAYUSCULAS Y MINUSCULAS PARA DIFERENCIAR LAS INCIALES
 // TODO: COMENTAR
 
@@ -20,16 +19,31 @@ public class FProject {
   public static final String tablesFilePath = "./ProyectoFinal/tableros.txt";
   public static final String tableSavedFilePath = "./ProyectoFinal/saveGame.txt";
 
+  public static boolean continueSavedGame(Scanner in) {
+    String continueSavedGameAnswer;
+    boolean continueSavedGameAnswerBool = false;
+
+    do {
+      System.out.println("Se ha encontrado una partida guardada, ¿quieres continuarla? (s -> sí | n -> no)");
+      continueSavedGameAnswer = myToLowerCase(in.nextLine());
+    } while (!continueSavedGameAnswer.equals("s") && !continueSavedGameAnswer.equals("n"));
+
+    if (continueSavedGameAnswer.equals("s"))
+      continueSavedGameAnswerBool = true;
+
+    return continueSavedGameAnswerBool;
+  }
+
   public static void main(String[] args) {
     Scanner in = new Scanner(System.in);
 
     // String startTableString = "111222 221121 112212 221121 112212 221121";
     // String startTableString = "010021 021002 000000 210120 200000 000022";
-    String startTableString = getRandomTableString();
+    String startTableString;
 
     int table[][];
     int startTable[][];
-    int tables[][][];
+    int tables[][][] = {};
 
     int winGames = 0;
     int playedGames = 0;
@@ -42,6 +56,8 @@ public class FProject {
     boolean validPlay;
     boolean saveGame;
 
+    String playedTables[] = {};
+    String savedGameInfo[];
     String userInput;
     String continuePlayingAnswer;
     String saveUserDataAnswer;
@@ -50,13 +66,53 @@ public class FProject {
 
     while (!finishGame) {
 
-      table = createTable(width, height, startTableString);
-      startTable = createTable(width, height, startTableString);
-      printTables(getTableSolved(table));
+      if (savedGame() && continueSavedGame(in)) {
 
+        savedGameInfo = getSavedGameInfo();
+
+        String passwordSavedEncrypted = savedGameInfo[savedGameInfo.length - 1];
+
+        System.out.println("Introduce la contraseña para recuperar la partida:");
+        password = in.nextLine();
+        boolean passwordCorrect = encryptPassword(password).equals(passwordSavedEncrypted);
+
+        while (!passwordCorrect && !password.equals("c")) {
+          System.out.println("Contraseña incorrecta, vuelve a intentarlo (c -> cancelar):");
+          password = in.nextLine();
+          passwordCorrect = encryptPassword(password).equals(passwordSavedEncrypted);
+        }
+
+        if (passwordCorrect && savedGameInfo.length >= 4) {
+          System.out.println("Contraseña correcta, cargando partida...");
+          int heightSaved = savedGameInfo[0].charAt(0) - '0';
+          int widthSaved = savedGameInfo[1].charAt(0) - '0';
+          for (int i = 2; i < savedGameInfo.length - 1; i++) {
+            tables = addTable(createTable(widthSaved, heightSaved, savedGameInfo[i]), tables);
+          }
+          startTableString = savedGameInfo[2];
+          table = tables[tables.length - 1];
+          startTable = createTable(widthSaved, heightSaved, startTableString);
+
+        } else {
+          if (savedGameInfo.length < 4)
+            System.out.println("No se ha podido recuperar la partida, el archivo está corrupto.");
+          System.out.println("Cancelando recuperación de partida...");
+          startTableString = getRandomTableString(playedTables);
+          table = createTable(width, height, startTableString);
+          startTable = createTable(width, height, startTableString);
+          tables = createArrayOfTables(startTable);
+        }
+
+      } else {
+        startTableString = getRandomTableString(playedTables);
+        table = createTable(width, height, startTableString);
+        startTable = createTable(width, height, startTableString);
+        tables = createArrayOfTables(startTable);
+      }
+
+      playedTables = pushStringValue(playedTables, startTableString);
       // Asigno la variable tables para almacenar todos los tableros que van
       // surgiendo a medida que se juega para, posteriormente, retrodecer las jugadas
-      tables = createArrayOfTables(startTable);
 
       do {
         drawTable(table);
@@ -73,6 +129,12 @@ public class FProject {
               if (saveGame) {
                 System.out.println("Introduce una contraseña para poder recuperar la partida:");
                 password = in.nextLine();
+
+                while (password.length() <= 3) {
+                  System.out.println("La contraseña debe tener más de 3 caracteres, vuelve a intentarlo:");
+                  password = in.nextLine();
+                }
+
                 saveTableGame(tables, password);
               }
             }
@@ -141,7 +203,8 @@ public class FProject {
     } while (!saveUserDataAnswer.equals("s") && !saveUserDataAnswer.equals("n"));
 
     if (saveUserData) {
-      System.out.print("Introduce tu nombre (si quieres que se sobreescriba introduce el mismo que introdujiste la última vez): ");
+      System.out.print(
+          "Introduce tu nombre (si quieres que se sobreescriba introduce el mismo que introdujiste la última vez): ");
       userName = in.nextLine();
     }
 
@@ -150,10 +213,51 @@ public class FProject {
     in.close();
   }
 
+  public static String[] getSavedGameInfo() {
+
+    File file = new File(tableSavedFilePath);
+    String[] savedGameInfo = {};
+
+    try {
+      Scanner readFile = new Scanner(file);
+      while (readFile.hasNext()) {
+        savedGameInfo = pushStringValue(savedGameInfo, readFile.nextLine());
+      }
+
+      readFile.close();
+    } catch (FileNotFoundException e) {
+      System.out.println("No se ha encontrado el archivo de guardado.");
+    }
+
+    return savedGameInfo;
+
+  }
+
+  public static boolean savedGame() {
+    File file = new File(tableSavedFilePath);
+    boolean savedGame = false;
+
+    try {
+
+      Scanner readFile = new Scanner(file);
+      if (readFile.hasNext()) {
+        char firstSavedGameFileCharacter = readFile.nextLine().charAt(0);
+        if (firstSavedGameFileCharacter >= '0' && firstSavedGameFileCharacter <= '9') {
+          savedGame = true;
+        }
+      }
+      readFile.close();
+    } catch (FileNotFoundException e) {
+      System.out.println("No se ha encontrado el archivo de guardado.");
+    }
+
+    return savedGame;
+  }
+
   public static void saveTableGame(int[][][] tables, String password) {
 
     File file = new File(tableSavedFilePath);
-    
+
     try {
       PrintWriter writer = new PrintWriter(file);
 
@@ -196,13 +300,6 @@ public class FProject {
     // TODO: pista que no rompa la partida, implementación -> que sea 100 por 100
     // correcta
 
-  }
-
-  public static void printTables(int[][][] tables) {
-    for (int i = 0; i < tables.length; i++) {
-      System.out.println("Tabla " + (i + 1));
-      drawTable(tables[i]);
-    }
   }
 
   public static int[][][] getTableSolved(int[][] table) {
@@ -359,7 +456,6 @@ public class FProject {
         }
       }
 
-      System.out.println(solvedTables.length);
       for (int i = solvedTables.length - 1; i >= 0; i--) {
         if (isFullTable(solvedTables[i]) && !comprobateTable(solvedTables[i], false)) {
           solvedTables = removeTable(solvedTables, i);
@@ -395,6 +491,15 @@ public class FProject {
 
     newArray[array.length] = value;
 
+    return newArray;
+  }
+
+  public static String[] pushStringValue(String array[], String value) {
+    String[] newArray = new String[array.length + 1];
+    for (int i = 0; i < array.length; i++) {
+      newArray[i] = array[i];
+    }
+    newArray[array.length] = value;
     return newArray;
   }
 
@@ -913,7 +1018,7 @@ public class FProject {
    * 
    * @return String aleatorio de tablero de juego sacado de tableros.txt
    */
-  public static String getRandomTableString() {
+  public static String getRandomTableString(String playedTables[]) {
     File tablesFile = new File(tablesFilePath);
     String tableString = "002000 000000 100120 000100 000020 110200";
 
@@ -938,18 +1043,28 @@ public class FProject {
 
       readFile.close();
 
-      // Linea aleatoria del archivo
+      // Linea aleatoria del archivo, en caso de haber jugado todos los tableros se
+      // vuelve a jugar uno aleatorio
+      boolean isAlreadyPlayed = false;
       int random = (int) (Math.random() * lines);
+
+      if (playedTables.length != lines) {
+        do {
+          random = (int) (Math.random() * lines);
+          for (int i = 0; i < playedTables.length && !isAlreadyPlayed; i++) {
+            if (playedTables[i].equals(arrayLines[random]))
+              isAlreadyPlayed = true;
+          }
+        } while (isAlreadyPlayed);
+      }
 
       tableString = arrayLines[random];
     } catch (FileNotFoundException e) {
       System.out.println("El archivo no fue encontrado");
+      System.out.println(e);
+
     }
 
     return tableString;
-  }
-
-  public static void clearConsole() {
-
   }
 }
