@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class FicherosEj1 {
   public static void main(String[] args) {
     System.out.println("Ejercicio 1 Ficheros\n");
-    File archivo = new File("test.txt");
+    File archivo = new File("Ficheros/test.txt");
     // E:\Programación\FPROG\Ficheros\test.txt
     // Ficheros -> "./test.txt"
 
