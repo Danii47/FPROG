@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Scanner;
 
 // https://fsymbols.com/generators/wide/
@@ -19,21 +20,6 @@ public class FProject {
   public static final String tablesFilePath = "./ProyectoFinal/tableros.txt";
   public static final String tableSavedFilePath = "./ProyectoFinal/saveGame.txt";
 
-  public static boolean continueSavedGame(Scanner in) {
-    String continueSavedGameAnswer;
-    boolean continueSavedGameAnswerBool = false;
-
-    do {
-      System.out.println("Se ha encontrado una partida guardada, ¿quieres continuarla? (s -> sí | n -> no)");
-      continueSavedGameAnswer = myToLowerCase(in.nextLine());
-    } while (!continueSavedGameAnswer.equals("s") && !continueSavedGameAnswer.equals("n"));
-
-    if (continueSavedGameAnswer.equals("s"))
-      continueSavedGameAnswerBool = true;
-
-    return continueSavedGameAnswerBool;
-  }
-
   public static void main(String[] args) {
     Scanner in = new Scanner(System.in);
 
@@ -43,6 +29,7 @@ public class FProject {
 
     int table[][];
     int startTable[][];
+    int solvedTables[][][];
     int tables[][][] = {};
 
     int winGames = 0;
@@ -72,7 +59,7 @@ public class FProject {
 
         String passwordSavedEncrypted = savedGameInfo[savedGameInfo.length - 1];
 
-        System.out.println("Introduce la contraseña para recuperar la partida:");
+        System.out.println("Introduce la contraseña para recuperar el tablero:");
         password = in.nextLine();
         boolean passwordCorrect = encryptPassword(password).equals(passwordSavedEncrypted);
 
@@ -83,7 +70,7 @@ public class FProject {
         }
 
         if (passwordCorrect && savedGameInfo.length >= 4) {
-          System.out.println("Contraseña correcta, cargando partida...");
+          System.out.println("Contraseña correcta, cargando tablero...");
           int heightSaved = savedGameInfo[0].charAt(0) - '0';
           int widthSaved = savedGameInfo[1].charAt(0) - '0';
           for (int i = 2; i < savedGameInfo.length - 1; i++) {
@@ -111,6 +98,7 @@ public class FProject {
       }
 
       playedTables = pushStringValue(playedTables, startTableString);
+      solvedTables = getTableSolved(startTable);
       // Asigno la variable tables para almacenar todos los tableros que van
       // surgiendo a medida que se juega para, posteriormente, retrodecer las jugadas
 
@@ -151,7 +139,7 @@ public class FProject {
             break;
 
           case "?":
-            getHint(table, startTable);
+            table = getHint(table, solvedTables);
             break;
 
           case "":
@@ -169,10 +157,12 @@ public class FProject {
             break;
 
           default:
-            validPlay = insertPlay(table, startTable, userInput); // TODO: mala práctica, cambiar valor de vector
+            validPlay = isValidPlay(table, startTable, userInput);
 
-            if (validPlay)
+            if (validPlay) {
+              table = insertPlay(table, userInput);
               tables = addTable(table, tables);
+            }
 
             break;
         }
@@ -213,6 +203,46 @@ public class FProject {
     in.close();
   }
 
+  /**
+   * 
+   * Pregunta al usuario si quiere continuar la partida guardada.
+   * 
+   * @param in Variable para entrada de teclado.
+   * @return Valor booleano dependiendo de si el usuario quiere continuar la
+   *         partida guardada.
+   */
+  public static boolean continueSavedGame(Scanner in) {
+    String continueSavedGameAnswer;
+    boolean continueSavedGameAnswerBool = false;
+
+    do {
+      System.out.println("Se ha encontrado un tablero guardado, ¿quieres continuarlo? (s -> sí | n -> no)");
+      continueSavedGameAnswer = myToLowerCase(in.nextLine());
+    } while (!continueSavedGameAnswer.equals("s") && !continueSavedGameAnswer.equals("n"));
+
+    if (continueSavedGameAnswer.equals("s"))
+      continueSavedGameAnswerBool = true;
+
+    return continueSavedGameAnswerBool;
+  }
+
+  /**
+   * 
+   * Obtiene a partir del archivo de tablero guardado un array de Strings con los
+   * datos del tablero guardado.
+   * En cada posición del array se almacena una fila del archivo (tablero con n
+   * jugadas).
+   * 
+   * [0] -> Altura del tablero
+   * [1] -> Anchura del tablero
+   * [2] -> Tablero inicial
+   * [3] -> Tablero jugada 1
+   * [4] -> Tablero jugada 2
+   * [n + 2] -> Tablero jugada n
+   * [n + 3] -> Contraseña encriptada
+   * 
+   * @return Array de Strings con los datos del tablero guardado.
+   */
   public static String[] getSavedGameInfo() {
 
     File file = new File(tableSavedFilePath);
@@ -233,6 +263,13 @@ public class FProject {
 
   }
 
+  /**
+   * 
+   * Comprueba si hay algo en el tablero de partidas guardadas.
+   * 
+   * @return Valor booleano dependiendo de si se ha encontrado un archivo de
+   *         guardado con algo escrito o no.
+   */
   public static boolean savedGame() {
     File file = new File(tableSavedFilePath);
     boolean savedGame = false;
@@ -240,12 +277,9 @@ public class FProject {
     try {
 
       Scanner readFile = new Scanner(file);
-      if (readFile.hasNext()) {
-        char firstSavedGameFileCharacter = readFile.nextLine().charAt(0);
-        if (firstSavedGameFileCharacter >= '0' && firstSavedGameFileCharacter <= '9') {
-          savedGame = true;
-        }
-      }
+      if (readFile.hasNext())
+        savedGame = true;
+
       readFile.close();
     } catch (FileNotFoundException e) {
       System.out.println("No se ha encontrado el archivo de guardado.");
@@ -254,11 +288,30 @@ public class FProject {
     return savedGame;
   }
 
+  /**
+   * 
+   * Guarda el tablero de juego en un archivo de texto. El archivo se guarda con
+   * el siguiente formato (tablero con n jugadas):
+   * 
+   * [0] -> Altura del tablero
+   * [1] -> Anchura del tablero
+   * [2] -> Tablero inicial
+   * [3] -> Tablero jugada 1
+   * [4] -> Tablero jugada 2
+   * [n + 2] -> Tablero jugada n
+   * [n + 3] -> Contraseña encriptada
+   * 
+   * @param tables   Array de matrices de juego.
+   * @param password Contraseña para encriptar el archivo.
+   */
   public static void saveTableGame(int[][][] tables, String password) {
 
     File file = new File(tableSavedFilePath);
 
     try {
+
+      file.createNewFile();
+
       PrintWriter writer = new PrintWriter(file);
 
       writer.println(tables[0].length);
@@ -268,7 +321,11 @@ public class FProject {
           for (int column = 0; column < tables[i][row].length; column++) {
             writer.print(tables[i][row][column]);
           }
-          writer.print(" ");
+
+          // Si no es la última fila de la matriz, añado un espacio en blanco para separar
+          // las filas en el archivo.
+          if (row != tables[i].length - 1)
+            writer.print(" ");
         }
         writer.println();
       }
@@ -278,9 +335,40 @@ public class FProject {
       writer.close();
     } catch (FileNotFoundException e) {
       System.out.println("No fue posible guardar la partida. El archivo no fue encontrado.");
+    } catch (IOException e) {
+      System.out.println("Ocurrió un error al crear el archivo.");
     }
   }
 
+  /**
+   * 
+   * Encripta la contraseña pasada por parametro de la siguiente manera:
+   * 1. Invierte el String de la contraseña.
+   * 2. Rota cada caracter del String de la contraseña en tantas posiciones como
+   * su longitud respecto al String "rotateString".
+   * 
+   * Ejemplo 1:
+   * * Hola -> aloH (longitud 4)
+   * * a + 4 = c (la suma es respecto el String rotateString en todos los casos)
+   * * l + 4 = n
+   * * o + 4 = q
+   * * H + 4 = J
+   * 
+   * * Hola -> cnqJ
+   * 
+   * Ejemplo 2:
+   * * Adios -> soidA (longitud 5)
+   * * s + 5 = V
+   * * o + 5 = R
+   * * i + 5 = L
+   * * d + 5 = G
+   * * A + 5 = c
+   * 
+   * * Adios -> VRLGc
+   * 
+   * @param password Contraseña a encriptar.
+   * @return Contraseña encriptada.
+   */
   public static String encryptPassword(String password) {
     String encryptedPassword = "";
     String rotateString = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0246813579";
@@ -293,15 +381,85 @@ public class FProject {
     return encryptedPassword;
   }
 
-  public static void getHint(int[][] table, int[][] startTable) {
+  /**
+   * 
+   * @param table        Matriz del tablero.
+   * @param solvedTables Array de matrices de posibles soluciones (por lo general
+   *                     solo habrá una solución).
+   * @return Devuelve el núevo tablero con el interrogante (?) de pista en la
+   *         posición indicada.
+   */
+  public static int[][] getHint(int[][] table, int[][][] solvedTables) {
 
-    // TODO: deberia dar una pista que 100 por 100 correcta o simplemente una pista
-    // que no rompa la partida?
-    // TODO: pista que no rompa la partida, implementación -> que sea 100 por 100
-    // correcta
+    int[] sameValues = new int[solvedTables.length];
 
+    for (int i = 0; i < solvedTables.length; i++) {
+      for (int row = 0; row < solvedTables[i].length; row++) {
+        for (int column = 0; column < solvedTables[i][row].length; column++) {
+          if (solvedTables[i][row][column] == table[row][column]) {
+            sameValues[i]++;
+          }
+        }
+      }
+    }
+
+    int maxValue = 0;
+    // Tabla de solución con más valores iguales a lo que está haciendo el usuario
+    int maxValueIndex = 0;
+
+    for (int i = 0; i < sameValues.length; i++) {
+      if (sameValues[i] > maxValue) {
+        maxValue = sameValues[i];
+        maxValueIndex = i;
+      }
+    }
+
+    if (!isFullTable(table)) {
+      int[] randomCoordenates = new int[2];
+
+      do {
+        randomCoordenates[0] = (int) (Math.random() * solvedTables[maxValueIndex].length);
+        randomCoordenates[1] = (int) (Math.random() * solvedTables[maxValueIndex][0].length);
+
+      } while (table[randomCoordenates[0]][randomCoordenates[1]] != 0);
+
+      System.out.println("Deberías poner una "
+          + ((solvedTables[maxValueIndex][randomCoordenates[0]][randomCoordenates[1]] == 1) ? OStart : XStart)
+          + " en la fila " + (randomCoordenates[0] + 1) + " y columna " + ((char) ('A' + randomCoordenates[1])) + ".");
+
+      table[randomCoordenates[0]][randomCoordenates[1]] = 3;
+
+    } else {
+      boolean failFound = false;
+      for (int row = 0; row < table.length && !failFound; row++) {
+        for (int column = 0; column < table[0].length && !failFound; column++) {
+          if (table[row][column] != solvedTables[maxValueIndex][row][column]) {
+            failFound = true;
+            System.out.println("Hay un error en la fila " + (row + 1) + " y columna " + ((char) ('A' + column)) + ".");
+          }
+        }
+      }
+
+      if (!failFound)
+        System.out.println("No hay pista disponible.");
+
+    }
+
+    return table;
   }
 
+  /**
+   * 
+   * Intenta colocar los valores que tienen que ir sí o sí en el tablero (Ej: si
+   * hay dos X juntas debe poner una O a cada lado).
+   * En caso de no poder colocar nada divide la matriz en dos matrices añadiendo
+   * ambos valores y vuelve a intentar el algoritmo.
+   * Así sucesivamente hasta que se encuentre una solución.
+   * 
+   * @param table Matriz del tablero.
+   * @return Array de matrices de posibles soluciones (por lo general solo habrá
+   *         una solución).
+   */
   public static int[][][] getTableSolved(int[][] table) {
 
     boolean[] sameTables = new boolean[1];
@@ -468,6 +626,14 @@ public class FProject {
     return solvedTables;
   }
 
+  /**
+   * 
+   * Elimina un valor de un array de booleanos.
+   * 
+   * @param array         Array de booleanos.
+   * @param indexToRemove Índice del elemento a eliminar.
+   * @return Array de booleanos con el elemento eliminado.
+   */
   public static boolean[] removeBooleanValue(boolean[] array, int indexToRemove) {
     boolean[] newArray = new boolean[array.length - 1];
 
@@ -540,6 +706,13 @@ public class FProject {
     return newMatrixArray;
   }
 
+  /**
+   * 
+   * Convierte mayusculas a minusculas en un String.
+   * 
+   * @param str String a convertir a minúsculas.
+   * @return String en minúsculas.
+   */
   public static String myToLowerCase(String str) {
 
     String newStr = "";
@@ -598,7 +771,6 @@ public class FProject {
         newTables[tables.length][row][column] = table[row][column];
 
       }
-
     }
 
     return newTables;
@@ -718,17 +890,21 @@ public class FProject {
 
   /**
    * 
-   * Actualiza la tabla con la decisión tomada por el usuario y comprueba si es
-   * válida o no. Tiene un valor de retorno que depende de si ha sido una decisión
-   * válida o no.
+   * Comprueba si la jugada introducida por el usuario es válida o no.
+   * 1. Comprueba si la longitud de la jugada es 2.
+   * 2. Comprueba si el primer caracter es un número entre 1 y el número de filas
+   * del tablero.
+   * 3. Comprueba si el segundo caracter es una letra entre a y la última letra de
+   * la columna del tablero.
+   * 4. Comprueba si la casilla está bloqueada (es una casilla del tablero
+   * inicial).
    * 
-   * @param table      Matriz de juego.
-   * @param startTable Matriz del inicio de juego.
+   * @param table      Matriz del tablero.
+   * @param startTable Matriz del tablero inicial.
    * @param userInput  Cadena de texto introducida por el usuario.
    * @return Valor booleano dependiendo de si la jugada es válida o no.
    */
-  public static boolean insertPlay(int[][] table, int[][] startTable, String userInput) {
-
+  public static boolean isValidPlay(int[][] table, int[][] startTable, String userInput) {
     boolean validPlay = false;
 
     if (userInput.length() == 2) {
@@ -748,20 +924,7 @@ public class FProject {
         int userInputCharacterInt = userInputCharacter - 'a';
 
         if (startTable[userInputNumberInt][userInputCharacterInt] == 0) {
-          switch (table[userInputNumberInt][userInputCharacterInt]) {
-            case 0:
-              table[userInputNumberInt][userInputCharacterInt] = 2;
-              break;
-            case 1:
-              table[userInputNumberInt][userInputCharacterInt] = 0;
-              break;
-            case 2:
-              table[userInputNumberInt][userInputCharacterInt] = 1;
-              break;
-          }
-          if (isFullTable(table)) {
-            System.out.println("Has llenado el tablero. Si quieres comprobar si has ganado, pulsa ENTER.");
-          }
+
           validPlay = true;
 
         } else {
@@ -776,6 +939,43 @@ public class FProject {
     }
 
     return validPlay;
+  }
+
+  /**
+   * 
+   * Actualiza la tabla con la decisión tomada por el usuario y comprueba si es
+   * válida o no. Tiene un valor de retorno que depende de si ha sido una decisión
+   * válida o no.
+   * 
+   * @param table      Matriz de juego.
+   * @param startTable Matriz del inicio de juego.
+   * @param userInput  Cadena de texto introducida por el usuario.
+   * @return Valor booleano dependiendo de si la jugada es válida o no.
+   */
+  public static int[][] insertPlay(int[][] table, String userInput) {
+
+    char userInputNumber = userInput.charAt(0);
+    char userInputCharacter = myToLowerCase(userInput).charAt(1);
+
+    int userInputNumberInt = (userInputNumber - '0') - 1;
+    int userInputCharacterInt = userInputCharacter - 'a';
+
+    switch (table[userInputNumberInt][userInputCharacterInt]) {
+      case 0:
+        table[userInputNumberInt][userInputCharacterInt] = 2;
+        break;
+      case 1:
+        table[userInputNumberInt][userInputCharacterInt] = 0;
+        break;
+      case 2:
+        table[userInputNumberInt][userInputCharacterInt] = 1;
+        break;
+    }
+    if (isFullTable(table)) {
+      System.out.println("Has llenado el tablero. Si quieres comprobar si has ganado, pulsa ENTER.");
+    }
+
+    return table;
   }
 
   /**
@@ -991,7 +1191,8 @@ public class FProject {
             gapToDraw = X;
             break;
           default:
-            gapToDraw = ' ';
+            gapToDraw = '?';
+            table[row][column] = 0;
             break;
         }
 
