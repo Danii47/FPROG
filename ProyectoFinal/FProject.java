@@ -24,8 +24,8 @@ public class FProject {
     Scanner in = new Scanner(System.in);
 
     // String startTableString = "111222 221121 112212 221121 112212 221121";
-    // String startTableString = "010021 021002 000000 210120 200000 000022";
-    String startTableString;
+    String startTableString = "020200 000000 100100 010000 110000 002000";
+    //String startTableString;
 
     int table[][];
     int startTable[][];
@@ -91,7 +91,7 @@ public class FProject {
         }
 
       } else {
-        startTableString = getRandomTableString(playedTables);
+        //startTableString = getRandomTableString(playedTables);
         table = createTable(width, height, startTableString);
         startTable = createTable(width, height, startTableString);
         tables = createArrayOfTables(startTable);
@@ -103,6 +103,7 @@ public class FProject {
       // surgiendo a medida que se juega para, posteriormente, retrodecer las jugadas
 
       do {
+        System.out.println(getTableSolved(table).length);
         drawTable(table);
 
         System.out.print("Jugada: ");
