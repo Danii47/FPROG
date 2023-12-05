@@ -5,21 +5,101 @@ import java.io.IOException;
 import java.util.Scanner;
 
 // https://fsymbols.com/generators/wide/
-// TODO: Explicar previousTable(), addTable() y comprobateTable()
-// TODO: MAYUSCULAS Y MINUSCULAS PARA DIFERENCIAR LAS INCIALES
-// TODO: COMENTAR
+// TODO: Explicar previousTable(), pushTable() y comprobateTable()
+// TODO: Puntuaciones guardar en archivo con nombre y contraseña?
 
+/**
+ * 
+ * Proyecto final de programación.
+ * 
+ * El juego consiste en un tablero de 6x6 casillas, en el que se deben colocar
+ * fichas de dos colores (X y O) de forma que no haya más de dos fichas del
+ * mismo color juntas en una fila o columna.
+ * 
+ * El tablero inicial se genera de forma aleatoria, y el usuario debe ir
+ * colocando las fichas en las casillas vacías. El usuario puede colocar una
+ * ficha en una casilla vacía, o bien colocar un interrogante (?) en una casilla
+ * vacía para que el programa le sugiera una jugada.
+ * 
+ * El programa debe ser capaz de detectar cuando el tablero está completo, y
+ * mostrar un mensaje de felicitación.
+ * 
+ * El programa debe permitir al usuario guardar la partida en un archivo de
+ * texto, y recuperarla posteriormente.
+ * 
+ * El programa debe permitir al usuario guardar su puntuación en un archivo de
+ * texto, y mostrar la puntuación de los usuarios anteriores.
+ * 
+ * El programa debe permitir al usuario salir del juego en cualquier momento,
+ * preguntando si quiere guardar la partida.
+ * 
+ * El programa debe permitir al usuario retroceder jugadas, hasta el inicio de
+ * la partida.
+ * 
+ * El programa debe permitir al usuario reiniciar la partida en cualquier
+ * momento.
+ * 
+ * El programa debe permitir al usuario pedir una pista, que consiste en
+ * mostrar una casilla vacía en la que se debe colocar una ficha.
+ * 
+ * El programa debe permitir al usuario elegir el nivel de dificultad, que
+ * consiste en el número de fichas que se colocan en el tablero inicial.
+ * 
+ * El programa debe permitir al usuario elegir el color de las fichas.
+ * 
+ * El programa debe permitir al usuario elegir el tamaño del tablero.
+ * 
+ * El programa debe permitir al usuario elegir el número de jugadas que se
+ * retroceden al pulsar la tecla de retroceso.
+ * 
+ * El programa debe permitir al usuario elegir el número de pistas que se
+ * muestran al pulsar la tecla de pistas.
+ */
 public class FProject {
+  /**
+   * Dibujo del valor 1.
+   */
   public static final char X = 'x';
+  /**
+   * Dibujo del valor 2.
+   */
   public static final char O = 'o';
+  /**
+   * Dibujo del valor 1 siendo de tablero inicial.
+   */
   public static final char XStart = 'X';
+  /**
+   * Dibujo del valor 2 siendo de tablero inicial.
+   */
   public static final char OStart = 'O';
+  /**
+   * La diferencia en ASCII entre una mayúscula y una minúscula.
+   * Usado para convertir mayúsculas a minúsculas y viceversa.
+   */
   public static final int valueToChangeCase = 'a' - 'A';
+  /**
+   * Anchura del tablero.
+   */
   public static final int width = 6;
+  /**
+   * Altura del tablero.
+   */
   public static final int height = 6;
+  /**
+   * Ruta del archivo de tableros.
+   */
   public static final String tablesFilePath = "./ProyectoFinal/tableros.txt";
+  /**
+   * Ruta del archivo de partida guardada.
+   */
   public static final String tableSavedFilePath = "./ProyectoFinal/saveGame.txt";
 
+  /**
+   * 
+   * Metodo principal del programa.
+   * 
+   * @param args Argumentos de la línea de comandos.
+   */
   public static void main(String[] args) {
     Scanner in = new Scanner(System.in);
 
@@ -74,7 +154,7 @@ public class FProject {
           int heightSaved = savedGameInfo[0].charAt(0) - '0';
           int widthSaved = savedGameInfo[1].charAt(0) - '0';
           for (int i = 2; i < savedGameInfo.length - 1; i++) {
-            tables = addTable(createTable(widthSaved, heightSaved, savedGameInfo[i]), tables);
+            tables = pushTable(createTable(widthSaved, heightSaved, savedGameInfo[i]), tables);
           }
           startTableString = savedGameInfo[2];
           table = tables[tables.length - 1];
@@ -83,7 +163,9 @@ public class FProject {
         } else {
           if (savedGameInfo.length < 4)
             System.out.println("No se ha podido recuperar la partida, el archivo está corrupto.");
+
           System.out.println("Cancelando recuperación de partida...");
+
           startTableString = getRandomTableString(playedTables);
           table = createTable(width, height, startTableString);
           startTable = createTable(width, height, startTableString);
@@ -98,7 +180,8 @@ public class FProject {
       }
 
       playedTables = pushStringValue(playedTables, startTableString);
-      solvedTables = getTableSolved(startTable);
+      solvedTables = getSolvedTables(startTable);
+
       // Asigno la variable tables para almacenar todos los tableros que van
       // surgiendo a medida que se juega para, posteriormente, retrodecer las jugadas
 
@@ -161,7 +244,7 @@ public class FProject {
 
             if (validPlay) {
               table = insertPlay(table, userInput);
-              tables = addTable(table, tables);
+              tables = pushTable(table, tables);
             }
 
             break;
@@ -383,6 +466,9 @@ public class FProject {
 
   /**
    * 
+   * Da una pistas de la jugada que debería hacer el usuario. En caso de haber
+   * algo mal en el tablero, lo indica.
+   * 
    * @param table        Matriz del tablero.
    * @param solvedTables Array de matrices de posibles soluciones (por lo general
    *                     solo habrá una solución).
@@ -460,7 +546,7 @@ public class FProject {
    * @return Array de matrices de posibles soluciones (por lo general solo habrá
    *         una solución).
    */
-  public static int[][][] getTableSolved(int[][] table) {
+  public static int[][][] getSolvedTables(int[][] table) {
 
     boolean[] sameTables = new boolean[1];
     sameTables[0] = true;
@@ -492,9 +578,11 @@ public class FProject {
 
               switch (solvedTables[i][row][column]) {
                 case 2:
+                case 4:
                   xCont++;
                   break;
                 case 1:
+                case 3:
                   oCont++;
                   break;
               }
@@ -510,8 +598,8 @@ public class FProject {
 
               if (column != solvedTables[i][0].length - 1) {
 
-                if (solvedTables[i][row][column] == solvedTables[i][row][column + 1]
-                    && solvedTables[i][row][column] != 0) {
+                if (solvedTables[i][row][column] % 2 == solvedTables[i][row][column + 1] % 2
+                    && solvedTables[i][row][column] != 0 && solvedTables[i][row][column + 1] != 0) {
 
                   if (column != solvedTables[i][0].length - 2 && solvedTables[i][row][column + 2] == 0) {
                     solvedTables[i][row][column + 2] = (solvedTables[i][row][column] == 1) ? 2 : 1;
@@ -523,9 +611,10 @@ public class FProject {
                   }
 
                 }
-                if (column != 0 && solvedTables[i][row][column - 1] == solvedTables[i][row][column + 1]
+                if (column != 0 && solvedTables[i][row][column - 1] % 2 == solvedTables[i][row][column + 1] % 2
                     && solvedTables[i][row][column] == 0
-                    && solvedTables[i][row][column - 1] != 0) {
+                    && solvedTables[i][row][column - 1] != 0
+                    && solvedTables[i][row][column + 1] != 0) {
                   solvedTables[i][row][column] = (solvedTables[i][row][column - 1] == 1) ? 2 : 1;
                   sameTables[i] = false;
                 }
@@ -543,9 +632,11 @@ public class FProject {
 
               switch (solvedTables[i][row][column]) {
                 case 2:
+                case 4:
                   xCont++;
                   break;
                 case 1:
+                case 3:
                   oCont++;
                   break;
               }
@@ -561,8 +652,8 @@ public class FProject {
 
               if (row != solvedTables[i].length - 1) {
 
-                if (solvedTables[i][row][column] == solvedTables[i][row + 1][column]
-                    && solvedTables[i][row][column] != 0) {
+                if (solvedTables[i][row][column] % 2 == solvedTables[i][row + 1][column] % 2
+                    && solvedTables[i][row][column] != 0 && solvedTables[i][row + 1][column] != 0) {
 
                   if (row != solvedTables[i].length - 2 && solvedTables[i][row + 2][column] == 0) {
                     solvedTables[i][row + 2][column] = (solvedTables[i][row][column] == 1) ? 2 : 1;
@@ -574,9 +665,9 @@ public class FProject {
                   }
 
                 }
-                if (row != 0 && solvedTables[i][row - 1][column] == solvedTables[i][row + 1][column]
+                if (row != 0 && solvedTables[i][row - 1][column] % 2 == solvedTables[i][row + 1][column] % 2
                     && solvedTables[i][row][column] == 0
-                    && solvedTables[i][row - 1][column] != 0) {
+                    && solvedTables[i][row - 1][column] != 0 && solvedTables[i][row + 1][column] != 0) {
                   solvedTables[i][row][column] = (solvedTables[i][row - 1][column] == 1) ? 2 : 1;
                   sameTables[i] = false;
                 }
@@ -648,6 +739,14 @@ public class FProject {
     return newArray;
   }
 
+  /**
+   * 
+   * Añade un valor a un array de booleanos.
+   * 
+   * @param array Array de booleanos.
+   * @param value Valor a añadir al array.
+   * @return Array de booleanos con el valor añadido.
+   */
   public static boolean[] pushBooleanValue(boolean[] array, boolean value) {
     boolean[] newArray = new boolean[array.length + 1];
 
@@ -660,6 +759,14 @@ public class FProject {
     return newArray;
   }
 
+  /**
+   * 
+   * Añade un valor a un array de Strings.
+   * 
+   * @param array Array de Strings.
+   * @param value Valor a añadir al array.
+   * @return Array de Strings con el valor añadido.
+   */
   public static String[] pushStringValue(String array[], String value) {
     String[] newArray = new String[array.length + 1];
     for (int i = 0; i < array.length; i++) {
@@ -669,6 +776,14 @@ public class FProject {
     return newArray;
   }
 
+  /**
+   * 
+   * Elimina una matriz de un array de matrices.
+   * 
+   * @param tables        Array de matrices.
+   * @param indexToRemove Índice de la matriz a eliminar.
+   * @return Array de matrices con la matriz eliminada.
+   */
   public static int[][][] removeTable(int[][][] tables, int indexToRemove) {
 
     int[][][] newTables = new int[tables.length - 1][tables[0].length][tables[0][0].length];
@@ -684,6 +799,17 @@ public class FProject {
     return newTables;
   }
 
+  /**
+   * 
+   * De una matriz de juego, generá dos matrices, una con una X y otra con una O
+   * en la posición indicada.
+   * 
+   * @param tables        Array de matrices.
+   * @param indexToSplit  Índice de la matriz a dividir.
+   * @param rowToSplit    Fila de la matriz a dividir.
+   * @param columnToSplit Columna de la matriz a dividir.
+   * @return Array de matrices con la matriz dividida en dos.
+   */
   public static int[][][] toSplitMatrix(int[][][] tables, int indexToSplit, int rowToSplit, int columnToSplit) {
     int[][][] newMatrixArray = new int[tables.length + 1][tables[0].length][tables[0][0].length];
 
@@ -729,10 +855,10 @@ public class FProject {
   /**
    * 
    * Crea un array de las matrices de juego, inicializando está en un array con el
-   * table incial para ir añadiendo jugadas posteriormente.
+   * tablero incial para ir añadiendo jugadas posteriormente.
    * 
-   * @param startTable String codificado como indica el enunciado. (más explicado
-   *                   en createTable())
+   * @param table String codificado como indica el enunciado. (más explicado
+   *              en createTable())
    * @return Array de matrices de juego
    */
   public static int[][][] createArrayOfTables(int[][] table) {
@@ -742,12 +868,15 @@ public class FProject {
 
   /**
    * 
-   * @param table  Matriz del table actual.
+   * Añade una matriz de juego al array de matrices de juego.
+   * 
+   * @param table  Matriz del tablero actual.
    * @param tables Array de matrices de todos los tableros de juegos.
-   * @return Array de matrices de todos los tableros de juegos añadiendo table (el
+   * @return Array de matrices de todos los tableros de juegos añadiendo tablero
+   *         (el
    *         último jugado).
    */
-  public static int[][][] addTable(int[][] table, int[][][] tables) {
+  public static int[][][] pushTable(int[][] table, int[][][] tables) {
 
     // Creo el nuevo Array de matrices de juegos. Este debe tener la longitud del
     // que ya había + 1.
@@ -761,8 +890,9 @@ public class FProject {
 
     }
 
-    // Añado la nueva matriz del table actualizado en la ultima posición. (está
-    // vez si hago una copia exhaustiva ya que table podría cambiar su valor durante
+    // Añado la nueva matriz del tablero actualizado en la ultima posición. (está
+    // vez si hago una copia exhaustiva ya que tablero podría cambiar su valor
+    // durante
     // la ejecucion)
     for (int row = 0; row < table.length; row++) {
 
@@ -778,10 +908,10 @@ public class FProject {
 
   /**
    * 
-   * Actualiza el valor de table al anterior jugado basandose en el array de
+   * Actualiza el valor de tablero al anterior jugado basandose en el array de
    * matrices de juego tables.
    * 
-   * @param table  table actual, se usa para poder actualizarlo al anterior
+   * @param table  tablero actual, se usa para poder actualizarlo al anterior
    *               basandose en tables.
    * @param tables array de matrices de juego
    * @return array de matrices de juego quitando la última matriz
@@ -814,8 +944,9 @@ public class FProject {
 
       }
 
-      // Establezco los valores de table al úlimo elemento de newTables, que se trata
-      // del table de la anterior jugada
+      // Establezco los valores de tablero al úlimo elemento de newTables, que se
+      // trata
+      // del tablero de la anterior jugada
       for (int row = 0; row < table.length; row++) {
 
         for (int column = 0; column < table[0].length; column++) {
@@ -832,9 +963,9 @@ public class FProject {
 
   /**
    * 
-   * Comprueba si el table no tiene ningún espacio vacio.
+   * Comprueba si el tablero no tiene ningún espacio vacio.
    * 
-   * @param table Matriz del table.
+   * @param table Matriz del tablero.
    * @return Valor booleano dependiendo de si ha encontrado casilla con un 0 o no.
    */
   public static boolean isFullTable(int[][] table) {
@@ -874,12 +1005,20 @@ public class FProject {
     return confirmExit;
   }
 
+  /**
+   * 
+   * Confirmación para el usuario de si quiere guardar la partida o no.
+   * 
+   * @param in Variable para entrada de teclado.
+   * @return Valor booleano dependiendo de si el usuario confirma que quiere
+   *         guardar la partida.
+   */
   public static boolean confirmSaveGame(Scanner in) {
 
-    System.out.println("¿Quieres guardar la partida? (s -> sí | n -> no)");
     String confirmSaveGameStr;
-
+    
     do {
+      System.out.println("¿Quieres guardar la partida? (s -> sí | n -> no)");
       confirmSaveGameStr = myToLowerCase(in.nextLine());
     } while (!confirmSaveGameStr.equals("s") && !confirmSaveGameStr.equals("n"));
 
@@ -943,13 +1082,11 @@ public class FProject {
 
   /**
    * 
-   * Actualiza la tabla con la decisión tomada por el usuario y comprueba si es
-   * válida o no. Tiene un valor de retorno que depende de si ha sido una decisión
-   * válida o no.
+   * Actualiza la tabla con la decisión tomada por el usuario. Retorna la tabla ya
+   * actualizada.
    * 
-   * @param table      Matriz de juego.
-   * @param startTable Matriz del inicio de juego.
-   * @param userInput  Cadena de texto introducida por el usuario.
+   * @param table     Matriz de juego.
+   * @param userInput Cadena de texto introducida por el usuario.
    * @return Valor booleano dependiendo de si la jugada es válida o no.
    */
   public static int[][] insertPlay(int[][] table, String userInput) {
@@ -980,17 +1117,20 @@ public class FProject {
 
   /**
    * 
-   * Comprueba si la matriz del juego es válida. Debe tener el mismo número de X's
-   * (2) que de O's (1) tanto por columna como por filas y tener todos los huecos
-   * con X u O. Además, no puede haber ni 2 filas ni 2 columnas iguales.
+   * Comprueba si la matriz del juego es válida.
+   * 1. Debe tener el mismo número de X's que de O's tanto por columna como por
+   * filas.
+   * 2. No puede haber más de 2 X's u O's contiguas.
+   * 3. Tener todos los huecos con X u O.
+   * 4. No puede haber ni 2 filas ni 2 columnas iguales.
    * 
-   * @param table Matriz rellenada del juego
-   * @return
+   * @param table      Matriz rellenada del juego
+   * @param notifyUser Valor booleano que indica si se debe mostrar un mensaje al
+   *                   usuario o no.
+   * 
+   * @return Valor booleano dependiendo de si la matriz es válida o no.
    */
   public static boolean comprobateTable(int[][] table, boolean notifyUser) {
-
-    final int O = 1;
-    final int X = 2;
 
     int xCont = 0;
     int oCont = 0;
@@ -1001,16 +1141,20 @@ public class FProject {
     boolean validTable = true;
 
     // ! Comprobar filas
+
     for (int row = 0; row < table.length && validTable; row++) {
 
       for (int column = 0; column < table[row].length && validTable; column++) {
+
         switch (table[row][column]) {
-          case X:
+          case 2:
+          case 4:
             xCont++;
             xAdjacentCont++;
             oAdjacentCont = 0;
             break;
-          case O:
+          case 1:
+          case 3:
             oCont++;
             oAdjacentCont++;
             xAdjacentCont = 0;
@@ -1036,7 +1180,7 @@ public class FProject {
 
         for (int column = 0; column < table[row].length && validTable; column++) {
 
-          if (row != auxRow && table[row][column] == table[auxRow][column])
+          if (row != auxRow && table[row][column] % 2 == table[auxRow][column] % 2)
             sameValueCont++;
         }
 
@@ -1064,12 +1208,14 @@ public class FProject {
       for (int row = 0; row < table.length && validTable; row++) {
 
         switch (table[row][column]) {
-          case X:
+          case 2:
+          case 4:
             xCont++;
             xAdjacentCont++;
             oAdjacentCont = 0;
             break;
-          case O:
+          case 1:
+          case 3:
             oCont++;
             oAdjacentCont++;
             xAdjacentCont = 0;
@@ -1098,7 +1244,7 @@ public class FProject {
 
         for (int row = 0; row < table.length && validTable; row++) {
 
-          if (column != auxColumn && table[row][column] == table[row][auxColumn])
+          if (column != auxColumn && table[row][column] % 2 == table[row][auxColumn] % 2)
             sameValueCont++;
         }
 
@@ -1126,19 +1272,19 @@ public class FProject {
   /**
    * 
    * Crea una matriz del ancho y alto pedidos para jugar al juego. Además, crea el
-   * table predefinido a través del estilo de String explicado en el enunciado.
-   * Funciona para cualquier tamaño siempre y cuando el String del table
+   * tablero predefinido a través del estilo de String explicado en el enunciado.
+   * Funciona para cualquier tamaño siempre y cuando el String del tablero
    * mantenga el patrón.
    * 
-   * @param width         Tamaño de ancho del table (número entero).
-   * @param height        Tamaño de alto del table (número entero).
-   * @param tableToCreate Linea de texto que marca el table a crear.
+   * @param width         Tamaño de ancho del tablero (número entero).
+   * @param height        Tamaño de alto del tablero (número entero).
+   * @param tableToCreate Linea de texto que marca el tablero a crear.
    *                      tableToCreate -> "002200 002000 000000 001000 200101
    *                      100001".
    *                      Las cadenas individuales tienen que tener la longitud
    *                      del ancho y tiene que haber tantas cadenas como altura
    * 
-   * @return La matriz del table creado rellenada con ceros, unos y doses
+   * @return La matriz del tablero creado rellenada con ceros, unos y doses
    */
   public static int[][] createTable(int width, int height, String tableToCreate) {
     int[][] table = new int[height][width];
@@ -1150,7 +1296,7 @@ public class FProject {
 
         gapValue = tableToCreate.charAt((row * (width + 1)) + column) - '0';
         table[row][column] = gapValue;
-
+        
       }
 
     }
@@ -1160,9 +1306,9 @@ public class FProject {
 
   /**
    * 
-   * Dibuja la matriz del table en la terminal como indica el enunciado.
+   * Dibuja la matriz del tablero en la terminal como indica el enunciado.
    * 
-   * @param table Matriz del table
+   * @param table Matriz del tablero
    */
   public static void drawTable(int[][] table) {
 
@@ -1190,8 +1336,15 @@ public class FProject {
           case 2:
             gapToDraw = X;
             break;
+          case 3:
+            gapToDraw = OStart;
+            break;
+          case 4:
+            gapToDraw = XStart;
+            break;
           default:
-            gapToDraw = '?';
+            gapToDraw = '?'; // En caso de que haya un 5, se trata de una pista y se dibuja un ?. Después se
+                             // vuelve a poner a 0.
             table[row][column] = 0;
             break;
         }
@@ -1208,10 +1361,14 @@ public class FProject {
    * Devuelve un String aleatorio de tablero de juego sacado de tableros.txt para
    * poder jugar. En caso de no encontrar el tablero devuelve uno por defecto.
    * 
+   * @param playedTables Array de Strings con los tableros ya jugados.
+   * 
    * @return String aleatorio de tablero de juego sacado de tableros.txt
    */
   public static String getRandomTableString(String playedTables[]) {
     File tablesFile = new File(tablesFilePath);
+
+    // Tablero por defecto en caso de no encontrar el archivo
     String tableString = "002000 000000 100120 000100 000020 110200";
 
     try {
@@ -1252,11 +1409,10 @@ public class FProject {
 
       tableString = arrayLines[random];
     } catch (FileNotFoundException e) {
-      System.out.println("El archivo no fue encontrado");
-      System.out.println(e);
-
+      System.out.println("El archivo de tableros no se ha encontrado. Se jugará con el tablero por defecto.");
     }
 
     return tableString;
   }
+
 }
