@@ -7,54 +7,9 @@ import java.util.Scanner;
 // https://fsymbols.com/generators/wide/
 // TODO: Explicar previousTable(), pushTable() y comprobateTable()
 // TODO: Puntuaciones guardar en archivo con nombre y contraseña?
+// TODO: COMENTAR
 
-/**
- * 
- * Proyecto final de programación.
- * 
- * El juego consiste en un tablero de 6x6 casillas, en el que se deben colocar
- * fichas de dos colores (X y O) de forma que no haya más de dos fichas del
- * mismo color juntas en una fila o columna.
- * 
- * El tablero inicial se genera de forma aleatoria, y el usuario debe ir
- * colocando las fichas en las casillas vacías. El usuario puede colocar una
- * ficha en una casilla vacía, o bien colocar un interrogante (?) en una casilla
- * vacía para que el programa le sugiera una jugada.
- * 
- * El programa debe ser capaz de detectar cuando el tablero está completo, y
- * mostrar un mensaje de felicitación.
- * 
- * El programa debe permitir al usuario guardar la partida en un archivo de
- * texto, y recuperarla posteriormente.
- * 
- * El programa debe permitir al usuario guardar su puntuación en un archivo de
- * texto, y mostrar la puntuación de los usuarios anteriores.
- * 
- * El programa debe permitir al usuario salir del juego en cualquier momento,
- * preguntando si quiere guardar la partida.
- * 
- * El programa debe permitir al usuario retroceder jugadas, hasta el inicio de
- * la partida.
- * 
- * El programa debe permitir al usuario reiniciar la partida en cualquier
- * momento.
- * 
- * El programa debe permitir al usuario pedir una pista, que consiste en
- * mostrar una casilla vacía en la que se debe colocar una ficha.
- * 
- * El programa debe permitir al usuario elegir el nivel de dificultad, que
- * consiste en el número de fichas que se colocan en el tablero inicial.
- * 
- * El programa debe permitir al usuario elegir el color de las fichas.
- * 
- * El programa debe permitir al usuario elegir el tamaño del tablero.
- * 
- * El programa debe permitir al usuario elegir el número de jugadas que se
- * retroceden al pulsar la tecla de retroceso.
- * 
- * El programa debe permitir al usuario elegir el número de pistas que se
- * muestran al pulsar la tecla de pistas.
- */
+
 public class FProject {
   /**
    * Dibujo del valor 1.
@@ -73,6 +28,10 @@ public class FProject {
    */
   public static final char OStart = 'O';
   /**
+   * Dibujo del valor de pista.
+   */
+  public static final char hintSymbol = '?';
+  /**
    * La diferencia en ASCII entre una mayúscula y una minúscula.
    * Usado para convertir mayúsculas a minúsculas y viceversa.
    */
@@ -85,6 +44,10 @@ public class FProject {
    * Altura del tablero.
    */
   public static final int height = 6;
+  /**
+   * Valor de la pista.
+   */
+  public static final int hintNumber = 5;
   /**
    * Ruta del archivo de tableros.
    */
@@ -111,6 +74,27 @@ public class FProject {
     return isCorrectPassword;
   }
 
+  public static boolean comprobateTableString(String tableString, int height, int width) {
+    boolean isValidStringTable = true;
+
+    if (tableString.length() != (height * width) + (height - 1))
+      isValidStringTable = false;
+
+    for (int j = 0; j < tableString.length() && isValidStringTable; j++) {
+
+      if (j != 0 && (j + 1) % (width + 1) == 0) {
+        if (tableString.charAt(j) != ' ') {
+          isValidStringTable = false;
+        }
+
+      } else if (tableString.charAt(j) < '0' || tableString.charAt(j) > '5') {
+        isValidStringTable = false;
+      }
+    }
+
+    return isValidStringTable;
+  }
+
   public static boolean isValidGameInfo(String[] savedGameInfo) {
     boolean isValidGameInfo = false;
     boolean isValidStringTable = true;
@@ -129,39 +113,21 @@ public class FProject {
 
             for (int i = 2; i < savedGameInfo.length - 1 && isValidStringTable; i++) {
 
-              if (savedGameInfo[i].length() != (heightNumber * widthNumber) + (heightNumber - 1))
-                isValidStringTable = false;
+              isValidStringTable = comprobateTableString(savedGameInfo[i], heightNumber, widthNumber);
 
-              for (int j = 0; j < savedGameInfo[i].length() && isValidStringTable; j++) {
-
-                // if (j != 0 && j - () % widthNumber == 0) {
-                // if (savedGameInfo[i].charAt(j) != ' ') {
-                // isValidStringTable = false;
-
-                // System.out.println(isValidStringTable + " " + savedGameInfo[i].charAt(j) + "
-                // " + j + " " + widthNumber);
-
-                // }
-
-                // } else if (savedGameInfo[i].charAt(j) < '0' || savedGameInfo[i].charAt(j) >
-                // '5') {
-                // isValidStringTable = false;
-
-                // }
-
-              }
             }
 
             if (isValidStringTable)
               isValidGameInfo = true;
-            else {
-              System.out.println("El archivo de guardado está corrupto.");
-              System.out.println("Cancelando recuperación de partida...");
-            }
 
           }
         }
       }
+    }
+
+    if (!isValidGameInfo) {
+      System.out.println("El archivo de guardado está corrupto.");
+      System.out.println("Cancelando recuperación de partida...");
     }
 
     return isValidGameInfo;
@@ -206,7 +172,7 @@ public class FProject {
 
         String[] savedGameInfo = getSavedGameInfo();
 
-        if (isValidGameInfo(savedGameInfo) || true) {
+        if (isValidGameInfo(savedGameInfo)) {
 
           String passwordSavedEncrypted = savedGameInfo[savedGameInfo.length - 1];
 
@@ -238,8 +204,7 @@ public class FProject {
       do {
 
         drawTable(table);
-        System.out.println(solvedTables.length);
-        
+
         System.out.print("Jugada: ");
         userInput = in.nextLine();
 
@@ -302,13 +267,9 @@ public class FProject {
         }
       } while (!leftGame);
 
-      if (!finishGame) {
-        do {
-          System.out.println("¿Quieres jugar otro tablero? (SI/NO)");
-          continuePlayingAnswer = myToLowerCase(in.nextLine());
-          finishGame = (continuePlayingAnswer.equals("no")) ? true : false;
-        } while (!continuePlayingAnswer.equals("si") && !continuePlayingAnswer.equals("no"));
-      }
+      if (!finishGame)
+        finishGame = wantStopPlaying(in);
+
     }
 
     winPercentage = Math.round(((double) winGames / playedGames) * 10000) / 100;
@@ -324,6 +285,22 @@ public class FProject {
     }
 
     in.close();
+  }
+
+  public static boolean wantStopPlaying(Scanner in) {
+
+    String continuePlayingAnswer;
+    boolean wantStopPlaying = false;
+
+    do {
+
+      System.out.println("¿Quieres jugar otro tablero? (SI/NO)");
+      continuePlayingAnswer = myToLowerCase(in.nextLine());
+      wantStopPlaying = (continuePlayingAnswer.equals("no")) ? true : false;
+
+    } while (!continuePlayingAnswer.equals("si") && !continuePlayingAnswer.equals("no"));
+
+    return wantStopPlaying;
   }
 
   public static boolean saveUserDataWithPassword(Scanner in) {
@@ -576,12 +553,29 @@ public class FProject {
    */
   public static int[][] getHint(int[][] table, int[][][] solvedTables) {
 
+    int[][] newTable = new int[table.length][table[0].length];
+    int[] lastHintCoordenates = new int[2];
+
+    for (int i = 0; i < lastHintCoordenates.length; i++)
+      lastHintCoordenates[i] = -1;
+
     int[] sameValues = new int[solvedTables.length];
+
+    for (int row = 0; row < table.length; row++) {
+      for (int column = 0; column < table[0].length; column++) {
+        if (table[row][column] == hintNumber) {
+          lastHintCoordenates[0] = row;
+          lastHintCoordenates[1] = column;
+        }
+
+        newTable[row][column] = table[row][column];
+      }
+    }
 
     for (int i = 0; i < solvedTables.length; i++) {
       for (int row = 0; row < solvedTables[i].length; row++) {
         for (int column = 0; column < solvedTables[i][row].length; column++) {
-          if (solvedTables[i][row][column] == table[row][column]) {
+          if (solvedTables[i][row][column] == newTable[row][column]) {
             sameValues[i]++;
           }
         }
@@ -599,26 +593,34 @@ public class FProject {
       }
     }
 
-    if (!isFullTable(table)) {
+    if (!isFullTable(newTable)) {
+      // TODO: DARLE EL ERROR AL USUARIO EN LUGAR DE LA PISTA???
       int[] randomCoordenates = new int[2];
 
       do {
         randomCoordenates[0] = (int) (Math.random() * solvedTables[maxValueIndex].length);
         randomCoordenates[1] = (int) (Math.random() * solvedTables[maxValueIndex][0].length);
 
-      } while (table[randomCoordenates[0]][randomCoordenates[1]] != 0);
+      } while (newTable[randomCoordenates[0]][randomCoordenates[1]] != 0);
 
       System.out.println("Deberías poner una "
           + ((solvedTables[maxValueIndex][randomCoordenates[0]][randomCoordenates[1]] == 1) ? OStart : XStart)
           + " en la fila " + (randomCoordenates[0] + 1) + " y columna " + ((char) ('A' + randomCoordenates[1])) + ".");
 
-      table[randomCoordenates[0]][randomCoordenates[1]] = 3;
+      System.out.println("f: " + newTable[0][0]);
+
+      newTable[randomCoordenates[0]][randomCoordenates[1]] = hintNumber;
+
+      if (lastHintCoordenates[0] != -1 && lastHintCoordenates[1] != -1)
+        newTable[lastHintCoordenates[0]][lastHintCoordenates[1]] = 0;
+
+      System.out.println("s: " + newTable[0][0]);
 
     } else {
       boolean failFound = false;
-      for (int row = 0; row < table.length && !failFound; row++) {
-        for (int column = 0; column < table[0].length && !failFound; column++) {
-          if (table[row][column] != solvedTables[maxValueIndex][row][column]) {
+      for (int row = 0; row < newTable.length && !failFound; row++) {
+        for (int column = 0; column < newTable[0].length && !failFound; column++) {
+          if (newTable[row][column] != solvedTables[maxValueIndex][row][column]) {
             failFound = true;
             System.out.println("Hay un error en la fila " + (row + 1) + " y columna " + ((char) ('A' + column)) + ".");
           }
@@ -630,7 +632,7 @@ public class FProject {
 
     }
 
-    return table;
+    return newTable;
   }
 
   /**
@@ -701,11 +703,11 @@ public class FProject {
                     && solvedTables[i][row][column] != 0 && solvedTables[i][row][column + 1] != 0) {
 
                   if (column != solvedTables[i][0].length - 2 && solvedTables[i][row][column + 2] == 0) {
-                    solvedTables[i][row][column + 2] = (solvedTables[i][row][column] == 1) ? 2 : 1;
+                    solvedTables[i][row][column + 2] = (solvedTables[i][row][column] % 2 == 1) ? 2 : 1;
                     sameTables[i] = false;
                   }
                   if (column != 0 && solvedTables[i][row][column - 1] == 0) {
-                    solvedTables[i][row][column - 1] = (solvedTables[i][row][column] == 1) ? 2 : 1;
+                    solvedTables[i][row][column - 1] = (solvedTables[i][row][column] % 2 == 1) ? 2 : 1;
                     sameTables[i] = false;
                   }
 
@@ -714,7 +716,7 @@ public class FProject {
                     && solvedTables[i][row][column] == 0
                     && solvedTables[i][row][column - 1] != 0
                     && solvedTables[i][row][column + 1] != 0) {
-                  solvedTables[i][row][column] = (solvedTables[i][row][column - 1] == 1) ? 2 : 1;
+                  solvedTables[i][row][column] = (solvedTables[i][row][column - 1] % 2 == 1) ? 2 : 1;
                   sameTables[i] = false;
                 }
               }
@@ -755,11 +757,11 @@ public class FProject {
                     && solvedTables[i][row][column] != 0 && solvedTables[i][row + 1][column] != 0) {
 
                   if (row != solvedTables[i].length - 2 && solvedTables[i][row + 2][column] == 0) {
-                    solvedTables[i][row + 2][column] = (solvedTables[i][row][column] == 1) ? 2 : 1;
+                    solvedTables[i][row + 2][column] = (solvedTables[i][row][column] % 2 == 1) ? 2 : 1;
                     sameTables[i] = false;
                   }
                   if (row != 0 && solvedTables[i][row - 1][column] == 0) {
-                    solvedTables[i][row - 1][column] = (solvedTables[i][row][column] == 1) ? 2 : 1;
+                    solvedTables[i][row - 1][column] = (solvedTables[i][row][column] % 2 == 1) ? 2 : 1;
                     sameTables[i] = false;
                   }
 
@@ -767,7 +769,7 @@ public class FProject {
                 if (row != 0 && solvedTables[i][row - 1][column] % 2 == solvedTables[i][row + 1][column] % 2
                     && solvedTables[i][row][column] == 0
                     && solvedTables[i][row - 1][column] != 0 && solvedTables[i][row + 1][column] != 0) {
-                  solvedTables[i][row][column] = (solvedTables[i][row - 1][column] == 1) ? 2 : 1;
+                  solvedTables[i][row][column] = (solvedTables[i][row - 1][column] % 2 == 1) ? 2 : 1;
                   sameTables[i] = false;
                 }
 
@@ -1198,6 +1200,7 @@ public class FProject {
 
     switch (newTable[userInputNumberInt][userInputCharacterInt]) {
       case 0:
+      case hintNumber:
         newTable[userInputNumberInt][userInputCharacterInt] = 2;
         break;
       case 1:
@@ -1430,9 +1433,6 @@ public class FProject {
       for (int column = 0; column < table[row].length; column++) {
 
         switch (table[row][column]) {
-          case 0:
-            gapToDraw = ' ';
-            break;
           case 1:
             gapToDraw = O;
             break;
@@ -1445,10 +1445,12 @@ public class FProject {
           case 4:
             gapToDraw = XStart;
             break;
+          case 5:
+            gapToDraw = hintSymbol; // En caso de que haya un 5, se trata de una pista y se dibuja un ?. Después se
+                                    // vuelve a poner a 0.
+            break;
           default:
-            gapToDraw = '?'; // En caso de que haya un 5, se trata de una pista y se dibuja un ?. Después se
-                             // vuelve a poner a 0.
-            // table[row][column] = 0; // TODO: HACER ALGO AQUÍ
+            gapToDraw = ' ';
             break;
         }
 
@@ -1510,7 +1512,10 @@ public class FProject {
         } while (isAlreadyPlayed);
       }
 
-      tableString = arrayLines[random];
+      if (comprobateTableString(tableString, height, width))
+        tableString = arrayLines[random];
+      else
+        System.out.println("El tablero elegido del fichero no es válido. Se jugará con el tablero por defecto.");
     } catch (FileNotFoundException e) {
       System.out.println("El archivo de tableros no se ha encontrado. Se jugará con el tablero por defecto.");
     }
