@@ -7,54 +7,10 @@ import java.util.Scanner;
 // https://fsymbols.com/generators/wide/
 // TODO: Explicar previousTable(), pushTable() y comprobateTable()
 // TODO: Puntuaciones guardar en archivo con nombre y contraseña?
+// TODO: Comprobar archivo de tableros corrupto
+// TODO: Constante para guardar los 0/1/2 del fichero de entrada. Posible modificación que los tableros de entrada tengan otros números. Controlar el 3, 4, 5 
+// TODO: Añadir mensaje de error en el IOException por si el fichero es de solo lectura
 
-/**
- * 
- * Proyecto final de programación.
- * 
- * El juego consiste en un tablero de 6x6 casillas, en el que se deben colocar
- * fichas de dos colores (X y O) de forma que no haya más de dos fichas del
- * mismo color juntas en una fila o columna.
- * 
- * El tablero inicial se genera de forma aleatoria, y el usuario debe ir
- * colocando las fichas en las casillas vacías. El usuario puede colocar una
- * ficha en una casilla vacía, o bien colocar un interrogante (?) en una casilla
- * vacía para que el programa le sugiera una jugada.
- * 
- * El programa debe ser capaz de detectar cuando el tablero está completo, y
- * mostrar un mensaje de felicitación.
- * 
- * El programa debe permitir al usuario guardar la partida en un archivo de
- * texto, y recuperarla posteriormente.
- * 
- * El programa debe permitir al usuario guardar su puntuación en un archivo de
- * texto, y mostrar la puntuación de los usuarios anteriores.
- * 
- * El programa debe permitir al usuario salir del juego en cualquier momento,
- * preguntando si quiere guardar la partida.
- * 
- * El programa debe permitir al usuario retroceder jugadas, hasta el inicio de
- * la partida.
- * 
- * El programa debe permitir al usuario reiniciar la partida en cualquier
- * momento.
- * 
- * El programa debe permitir al usuario pedir una pista, que consiste en
- * mostrar una casilla vacía en la que se debe colocar una ficha.
- * 
- * El programa debe permitir al usuario elegir el nivel de dificultad, que
- * consiste en el número de fichas que se colocan en el tablero inicial.
- * 
- * El programa debe permitir al usuario elegir el color de las fichas.
- * 
- * El programa debe permitir al usuario elegir el tamaño del tablero.
- * 
- * El programa debe permitir al usuario elegir el número de jugadas que se
- * retroceden al pulsar la tecla de retroceso.
- * 
- * El programa debe permitir al usuario elegir el número de pistas que se
- * muestran al pulsar la tecla de pistas.
- */
 public class FProject {
   /**
    * Dibujo del valor 1.
@@ -455,7 +411,7 @@ public class FProject {
   public static String encryptPassword(String password) {
     String encryptedPassword = "";
     String rotateString = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0246813579";
-
+    
     for (int i = password.length() - 1; i >= 0; i--) {
       int rotatedIndex = (rotateString.indexOf(password.charAt(i)) + password.length()) % rotateString.length();
       encryptedPassword += rotateString.charAt(rotatedIndex);
