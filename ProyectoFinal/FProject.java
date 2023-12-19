@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class FProjecta {
+public class FProject {
 
   /**
    * Valores de las casillas del tablero.
