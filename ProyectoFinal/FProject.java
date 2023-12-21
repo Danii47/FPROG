@@ -10,7 +10,7 @@ import java.util.Scanner;
 // TODO: Comprobar archivo de tableros corrupto
 // TODO: Constante para guardar los 0/1/2 del fichero de entrada. Posible modificación que los tableros de entrada tengan otros números. Controlar el 3, 4, 5 
 // TODO: Añadir mensaje de error en el IOException por si el fichero es de solo lectura
-
+// TODO: Inicializar los arrays
 // TODO: COMENTAR
 
 
