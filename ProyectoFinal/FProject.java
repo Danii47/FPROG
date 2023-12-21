@@ -4,63 +4,433 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 
-// https://fsymbols.com/generators/wide/
-// TODO: Explicar previousTable(), pushTable() y comprobateTable()
-// TODO: Puntuaciones guardar en archivo con nombre y contraseña?
-// TODO: Comprobar archivo de tableros corrupto
-// TODO: Constante para guardar los 0/1/2 del fichero de entrada. Posible modificación que los tableros de entrada tengan otros números. Controlar el 3, 4, 5 
-// TODO: Añadir mensaje de error en el IOException por si el fichero es de solo lectura
-// TODO: Inicializar los arrays
-// TODO: COMENTAR
-
-
 public class FProject {
+
   /**
-   * Dibujo del valor 1.
+   * Valores de las casillas del tablero.
    */
-  public static final char X = 'x';
+  public static final int[] symbolNumbers = { 0, 2, 1, 5 };
+
   /**
-   * Dibujo del valor 2.
+   * Simbolos del tablero.
    */
-  public static final char O = 'o';
+  public static final char[] symbols = { ' ', 'x', 'o', '?' };
+
   /**
-   * Dibujo del valor 1 siendo de tablero inicial.
+   * Valores de las casillas del tablero inicial.
    */
-  public static final char XStart = 'X';
+  public static final int[] symbolsStartNumbers = { 4, 3 };
+
   /**
-   * Dibujo del valor 2 siendo de tablero inicial.
+   * Simbolos del tablero inicial.
    */
-  public static final char OStart = 'O';
+  public static final char[] symbolsStart = { 'X', 'O' };
+
   /**
-   * Dibujo del valor de pista.
+   * Valores de las casillas del tablero que serán usadas para operar.
    */
-  public static final char hintSymbol = '?';
+  public static final int[] defaultSymbolNumbers = { 0, 2, 1, 5 };
+
   /**
    * La diferencia en ASCII entre una mayúscula y una minúscula.
    * Usado para convertir mayúsculas a minúsculas y viceversa.
    */
   public static final int valueToChangeCase = 'a' - 'A';
+
   /**
    * Anchura del tablero.
    */
   public static final int width = 6;
+
   /**
    * Altura del tablero.
    */
   public static final int height = 6;
-  /**
-   * Valor de la pista.
-   */
-  public static final int hintNumber = 5;
+
   /**
    * Ruta del archivo de tableros.
    */
-  public static final String tablesFilePath = "./ProyectoFinal/tableros.txt";
+  public static final String tablesFilePath = "./tableros.txt";
+
   /**
    * Ruta del archivo de partida guardada.
    */
-  public static final String tableSavedFilePath = "./ProyectoFinal/saveGame.txt";
+  public static final String tableSavedFilePath = "./saveGame.txt";
 
+  /**
+   * Ruta del archivo de puntuaciones.
+   */
+  public static final String rankingFilePath = "./ranking.txt";
+
+  /**
+   * String de rotación para encriptar la contraseña.
+   */
+  public static final String rotateString = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0246813579";
+
+  /**
+   * 
+   * Metodo principal del programa.
+   * 
+   * @param args Argumentos de la línea de comandos.
+   */
+  public static void main(String[] args) {
+    Scanner in = new Scanner(System.in);
+
+    String startTableString;
+
+    int table[][];
+    int startTable[][];
+    int solvedTables[][][];
+    int tables[][][] = new int[1][height][width];
+
+    int winGames = 0;
+    int playedGames = 0;
+
+    double winPercentage;
+
+    boolean finishGame = false;
+    boolean leftGame = false;
+
+    String playedTables[] = new String[0];
+    String userInput;
+
+    while (!finishGame) {
+
+      startTableString = getRandomTableString(playedTables);
+
+      if (!startTableString.equals("")) {
+
+        table = createTable(width, height, startTableString, true);
+        startTable = createTable(width, height, startTableString, true);
+        tables[0] = startTable;
+
+        if (savedGame() && continueSavedGame(in)) {
+
+          String[] savedGameInfo = getSavedGameInfo();
+
+          if (isValidGameInfo(savedGameInfo)) {
+
+            String passwordSavedEncrypted = savedGameInfo[savedGameInfo.length - 1];
+
+            if (comprobatePassword(passwordSavedEncrypted, in)) {
+
+              System.out.println("Contraseña correcta, cargando tablero...");
+
+              int heightSaved = savedGameInfo[0].charAt(0) - '0';
+              int widthSaved = savedGameInfo[1].charAt(0) - '0';
+
+              startTableString = savedGameInfo[2];
+              startTable = createTable(widthSaved, heightSaved, startTableString, false);
+              tables[0] = startTable;
+
+              for (int i = 3; i < savedGameInfo.length - 1; i++) {
+                tables = pushTable(createTable(widthSaved, heightSaved, savedGameInfo[i], false), tables);
+              }
+
+              table = tables[tables.length - 1];
+
+            }
+
+          }
+        }
+
+        playedTables = pushStringValue(playedTables, startTableString);
+        solvedTables = getSolvedTables(startTable);
+
+        do {
+
+          drawTable(table);
+
+          System.out.print("Jugada: ");
+          userInput = in.nextLine();
+
+          switch (userInput) {
+            case "s":
+              leftGame = confirmExit(in);
+              finishGame = leftGame;
+
+              if (leftGame) {
+                if (confirmSaveGame(in)) {
+
+                  saveTableGame(tables, askPassword(in));
+                }
+              }
+
+              break;
+
+            case "-":
+              // Si tables es <= 1 significa que no hay más tableros hacía atras, solo el del
+              // inicio de juego.
+              if (tables.length > 1) {
+                tables = previousTable(tables);
+                for (int row = 0; row < table.length; row++) {
+
+                  for (int column = 0; column < table[0].length; column++) {
+
+                    table[row][column] = tables[tables.length - 1][row][column];
+
+                  }
+                }
+              } else
+                System.out.println("No hay jugadas anteriores.");
+
+              break;
+
+            case "reiniciar":
+              table = createTable(width, height, startTableString, true);
+              tables = new int[1][height][width];
+              tables[0] = startTable;
+              break;
+
+            case "?":
+              table = getHint(table, solvedTables);
+              break;
+
+            case "":
+              if (isFullTable(table)) {
+                if (comprobateTable(table, true)) {
+                  System.out.println("¡Enhorabuena, has competado el tablero!");
+                  winGames++;
+                }
+                playedGames++;
+                leftGame = true;
+
+              } else {
+                System.out.println("El tablero no está completo, ¡continua jugando!");
+              }
+
+              break;
+
+            default:
+
+              if (isValidPlay(table, startTable, userInput)) {
+                table = insertPlay(table, userInput);
+                tables = pushTable(table, tables);
+              }
+
+              break;
+          }
+        } while (!leftGame);
+
+      }
+
+      if (!finishGame) {
+        finishGame = wantStopPlaying(in);
+        leftGame = finishGame;
+      }
+
+    }
+
+    winPercentage = Math.round(((double) winGames / playedGames) * 10000) / 100;
+
+    System.out.println("Partidas jugadas: " + playedGames);
+    System.out.println("Partidas ganadas: " + winGames);
+    System.out.println("Porcentaje de ganadas: " + winPercentage + "%");
+
+    System.out.println();
+
+    if (wantSaveUserData(in)) {
+      saveUserData(in, playedGames, winGames);
+    }
+
+    showRanking();
+
+    in.close();
+  }
+
+  /**
+   * 
+   * Muestra el ranking de puntuaciones.
+   * 
+   */
+  public static void showRanking() {
+
+    File rankingFile = new File(rankingFilePath);
+    int rankingFileLines = countFileLines(rankingFile);
+
+    String[] rankingData = new String[rankingFileLines];
+
+    try {
+      Scanner readRanking = new Scanner(rankingFile);
+
+      for (int i = 0; i < rankingData.length; i++) {
+        rankingData[i] = readRanking.nextLine();
+      }
+
+      readRanking.close();
+
+      System.out.println("-------------------------------------------------------------");
+      System.out.println("|                      RANKING GENERAL                      |");
+      System.out.println("-------------------------------------------------------------");
+      System.out.println("| NOMBRE | PARTIDAS JUGADAS | PARTIDAS GANADAS | PORCENTAJE |");
+
+      for (int i = 0; i < rankingData.length; i += 3) {
+
+        int totalPlayedGamesNumber = 0;
+        int totalWinGames = 0;
+
+        for (int j = 0; j < rankingData[i + 1].length(); j++) {
+
+          if (rankingData[i + 1].charAt(j) >= '0' && rankingData[i + 1].charAt(j) <= '9') {
+            totalPlayedGamesNumber = totalPlayedGamesNumber * 10 + (rankingData[i + 1].charAt(j) - '0');
+          }
+
+        }
+
+        for (int j = 0; j < rankingData[i + 2].length(); j++) {
+
+          if (rankingData[i + 2].charAt(j) >= '0' && rankingData[i + 2].charAt(j) <= '9') {
+            totalWinGames = totalWinGames * 10 + (rankingData[i + 2].charAt(j) - '0');
+          }
+
+        }
+
+        double average = (totalPlayedGamesNumber > 0)
+            ? Math.round(((double) totalWinGames / totalPlayedGamesNumber) * 10000) / 100
+            : 0;
+
+        System.out.print("| " + rankingData[i] + "    ");
+        System.out.print("| " + rankingData[i + 1]);
+        for (int j = 0; j <= 16 - rankingData[i + 1].length(); j++) {
+          System.out.print(" ");
+        }
+
+        System.out.print("| " + rankingData[i + 2]);
+
+        for (int j = 0; j <= 16 - rankingData[i + 2].length(); j++) {
+          System.out.print(" ");
+        }
+
+        System.out.print("| " + average + "%");
+
+        for (int j = 0; j <= 9 - ("" + average).length(); j++) {
+          System.out.print(" ");
+        }
+
+        System.out.println("|");
+
+      }
+
+      System.out.println("-------------------------------------------------------------");
+
+    } catch (FileNotFoundException e) {
+      System.out.println("No hay ranking general registrado.");
+    }
+
+  }
+
+  /**
+   * 
+   * Cuenta el número de lineas que hay en el archivo de tableros.
+   * 
+   * @param file Archivo de tableros.
+   * @return Número de tableros que hay en el archivo.
+   */
+  public static int countFileLines(File file) {
+    int lines = 0;
+
+    try {
+      Scanner readFile = new Scanner(file);
+
+      while (readFile.hasNext()) {
+        lines++;
+        readFile.nextLine();
+      }
+
+      readFile.close();
+    } catch (FileNotFoundException e) {
+    }
+
+    return lines;
+  }
+
+  /**
+   * 
+   * Actualiza el archivo de puntuaciones con los datos de la partida actual.
+   * 
+   * @param userName    Nombre del usuario.
+   * @param playedGames Número de partidas jugadas.
+   * @param winGames    Número de partidas ganadas.
+   */
+  public static void updateUserDataFile(String userName, int playedGames, int winGames) {
+    File file = new File(rankingFilePath);
+
+    try {
+      file.createNewFile();
+
+      Scanner readRanking = new Scanner(file);
+
+      int lines = countFileLines(file);
+      String ranking[] = new String[lines];
+
+      for (int i = 0; i < ranking.length; i++) {
+        ranking[i] = readRanking.nextLine();
+      }
+
+      boolean userFound = false;
+
+      for (int i = 0; i < ranking.length && !userFound; i++) {
+
+        if (ranking[i].equals(userName)) {
+          userFound = true;
+
+          int totalPlayedGamesNumber = 0;
+          int totalWinGames = 0;
+
+          for (int j = 0; j < ranking[i + 1].length(); j++) {
+
+            if (ranking[i + 1].charAt(j) >= '0' && ranking[i + 1].charAt(j) <= '9') {
+              totalPlayedGamesNumber = totalPlayedGamesNumber * 10 + (ranking[i + 1].charAt(j) - '0');
+            }
+
+          }
+
+          for (int j = 0; j < ranking[i + 2].length(); j++) {
+
+            if (ranking[i + 2].charAt(j) >= '0' && ranking[i + 2].charAt(j) <= '9') {
+              totalWinGames = totalWinGames * 10 + (ranking[i + 2].charAt(j) - '0');
+            }
+
+          }
+
+          ranking[i + 1] = totalPlayedGamesNumber + playedGames + "";
+          ranking[i + 2] = totalWinGames + winGames + "";
+
+        }
+      }
+
+      if (!userFound) {
+        ranking = pushStringValue(ranking, userName);
+        ranking = pushStringValue(ranking, playedGames + "");
+        ranking = pushStringValue(ranking, winGames + "");
+      }
+
+      readRanking.close();
+
+      PrintWriter writer = new PrintWriter(file);
+
+      for (int i = 0; i < ranking.length; i++) {
+        writer.println(ranking[i]);
+      }
+
+      writer.close();
+
+    } catch (FileNotFoundException e) {
+      System.out.println("No fue posible guardar la partida. El archivo no fue encontrado.");
+    } catch (IOException e) {
+      System.out.println("Ocurrió un error al crear el archivo. Puede deberse a que el archivo es de solo lectura.");
+    }
+  }
+
+  /**
+   * 
+   * Comprueba si el tablero está completo.
+   * 
+   * @param passwordEncrypted Contraseña encriptada.
+   * @param in                Variable para entrada de teclado.
+   * @return Valor booleano dependiendo de si la contraseña introducida por el
+   *         usuario es correcta o no.
+   */
   public static boolean comprobatePassword(String passwordEncrypted, Scanner in) {
     System.out.println("Introduce la contraseña para recuperar el tablero:");
     String password = in.nextLine();
@@ -78,6 +448,16 @@ public class FProject {
     return isCorrectPassword;
   }
 
+  /**
+   * 
+   * Comprueba si el String del tablero tiene el formato adecuado.
+   * 
+   * @param tableString String del tablero.
+   * @param height      Altura del tablero.
+   * @param width       Anchura del tablero.
+   * @return Valor booleano dependiendo de si el String del tablero tiene el
+   *         formato adecuado.
+   */
   public static boolean comprobateTableString(String tableString, int height, int width) {
     boolean isValidStringTable = true;
 
@@ -86,19 +466,30 @@ public class FProject {
 
     for (int j = 0; j < tableString.length() && isValidStringTable; j++) {
 
-      if (j != 0 && (j + 1) % (width + 1) == 0) {
+      if ((j + 1) % (width + 1) == 0) {
         if (tableString.charAt(j) != ' ') {
           isValidStringTable = false;
         }
 
       } else if (tableString.charAt(j) < '0' || tableString.charAt(j) > '5') {
         isValidStringTable = false;
+
       }
     }
 
     return isValidStringTable;
   }
 
+  /**
+   * 
+   * Comprueba si las lineas del archivo de partida guardada tienen el formato
+   * adecuado.
+   * 
+   * @param savedGameInfo Array de Strings con las lineas del archivo de tablero
+   *                      guardado.
+   * @return Valor booleano dependiendo de si las lineas del archivo de partida
+   *         guardada tienen el formato adecuado.
+   */
   public static boolean isValidGameInfo(String[] savedGameInfo) {
     boolean isValidGameInfo = false;
     boolean isValidStringTable = true;
@@ -139,158 +530,12 @@ public class FProject {
 
   /**
    * 
-   * Metodo principal del programa.
+   * Pregunta al usuario si quiere jugar otro tablero
    * 
-   * @param args Argumentos de la línea de comandos.
+   * @param in Variable para entrada de teclado.
+   * @return Valor booleano dependiendo de si el usuario quieres seguir jugando o
+   *         no.
    */
-  public static void main(String[] args) {
-    Scanner in = new Scanner(System.in);
-
-    String startTableString;
-
-    int table[][];
-    int startTable[][];
-    int solvedTables[][][];
-    int tables[][][] = {};
-
-    int winGames = 0;
-    int playedGames = 0;
-
-    double winPercentage;
-
-    boolean finishGame = false;
-    boolean leftGame = false;
-
-    String playedTables[] = {};
-    String userInput;
-    String continuePlayingAnswer;
-
-    while (!finishGame) {
-
-      startTableString = getRandomTableString(playedTables);
-      table = createTable(width, height, startTableString, true);
-      startTable = createTable(width, height, startTableString, true);
-      tables = createArrayOfTables(startTable);
-
-      if (savedGame() && continueSavedGame(in)) {
-
-        String[] savedGameInfo = getSavedGameInfo();
-
-        if (isValidGameInfo(savedGameInfo)) {
-
-          String passwordSavedEncrypted = savedGameInfo[savedGameInfo.length - 1];
-
-          if (comprobatePassword(passwordSavedEncrypted, in)) {
-
-            System.out.println("Contraseña correcta, cargando tablero...");
-
-            int heightSaved = savedGameInfo[0].charAt(0) - '0';
-            int widthSaved = savedGameInfo[1].charAt(0) - '0';
-
-            startTableString = savedGameInfo[2];
-            startTable = createTable(widthSaved, heightSaved, startTableString, false);
-            tables = createArrayOfTables(startTable);
-
-            for (int i = 3; i < savedGameInfo.length - 1; i++) {
-              tables = pushTable(createTable(widthSaved, heightSaved, savedGameInfo[i], false), tables);
-            }
-
-            table = tables[tables.length - 1];
-
-          }
-
-        }
-      }
-
-      playedTables = pushStringValue(playedTables, startTableString);
-      solvedTables = getSolvedTables(startTable);
-
-      do {
-
-        drawTable(table);
-
-        System.out.print("Jugada: ");
-        userInput = in.nextLine();
-
-        switch (userInput) {
-          case "s":
-            leftGame = confirmExit(in);
-            finishGame = leftGame;
-
-            if (leftGame) {
-              if (confirmSaveGame(in)) {
-
-                saveTableGame(tables, askPassword(in));
-              }
-            }
-
-            break;
-
-          case "-":
-            // Si tables es <= 1 significa que no hay más tableros hacía atras, solo el del
-            // inicio de juego.
-            if (tables.length > 1)
-              tables = previousTable(table, tables);
-            else
-              System.out.println("No hay jugadas anteriores.");
-
-            break;
-
-          case "reiniciar":
-            table = createTable(width, height, startTableString, true);
-            tables = createArrayOfTables(startTable);
-            break;
-
-          case "?":
-            table = getHint(table, solvedTables);
-            break;
-
-          case "":
-            if (isFullTable(table)) {
-              if (comprobateTable(table, true)) {
-                System.out.println("¡Enhorabuena, has competado el tablero!");
-                winGames++;
-              }
-              playedGames++;
-              leftGame = true;
-
-            } else {
-              System.out.println("El tablero no está completo, ¡continua jugando!");
-            }
-
-            break;
-
-          default:
-
-            if (isValidPlay(table, startTable, userInput)) {
-              table = insertPlay(table, userInput);
-              tables = pushTable(table, tables);
-            }
-
-            break;
-        }
-      } while (!leftGame);
-
-      if (!finishGame)
-        finishGame = wantStopPlaying(in);
-
-    }
-
-    winPercentage = Math.round(((double) winGames / playedGames) * 10000) / 100;
-
-    System.out.println("Partidas jugadas: " + playedGames);
-    System.out.println("Partidas ganadas: " + winGames);
-    System.out.println("Porcentaje de ganadas: " + winPercentage + "%");
-
-    System.out.println();
-
-    if (wantSaveUserData(in)) {
-      saveUserData(in);
-    }
-
-    in.close();
-  }
-
   public static boolean wantStopPlaying(Scanner in) {
 
     String continuePlayingAnswer;
@@ -307,22 +552,16 @@ public class FProject {
     return wantStopPlaying;
   }
 
-  public static boolean saveUserDataWithPassword(Scanner in) {
-
-    System.out.println("Quieres guardar tu puntuación con contraseña? (s -> sí | n -> no)");
-    String saveUserDataWithPasswordAnswer = myToLowerCase(in.nextLine());
-
-    while (!saveUserDataWithPasswordAnswer.equals("s") && !saveUserDataWithPasswordAnswer.equals("n")) {
-      System.out.println("Respuesta incorrecta, vuelve a intentarlo (s -> sí | n -> no): ");
-      saveUserDataWithPasswordAnswer = myToLowerCase(in.nextLine());
-    }
-
-    return (saveUserDataWithPasswordAnswer.equals("s")) ? true : false;
-
-  }
-
-  public static void saveUserData(Scanner in) {
-    System.out.print("Introduce tu nombre (debe únicamente 3 caracteres): ");
+  /**
+   * 
+   * Pregunta al usuario el nombre y guarda su puntiación.
+   * 
+   * @param in          Variable para entrada de teclado.
+   * @param playedGames Número de partidas jugadas.
+   * @param winGames    Número de partidas ganadas.
+   */
+  public static void saveUserData(Scanner in, int playedGames, int winGames) {
+    System.out.print("Introduce tu nombre (debe tener únicamente 3 caracteres): ");
     String userName = in.nextLine();
 
     while (userName.length() != 3) {
@@ -330,15 +569,17 @@ public class FProject {
       userName = in.nextLine();
     }
 
-    String statPassword = "";
-
-    if (saveUserDataWithPassword(in))
-      statPassword = askPassword(in);
-
-    // updateUserDataFile(username, statPassword, playedGames, winGames);
+    updateUserDataFile(userName, playedGames, winGames);
 
   }
 
+  /**
+   * 
+   * Pregunta al usuario por la contraseña para poder recuperar la partida.
+   * 
+   * @param in Variable para entrada de teclado.
+   * @return Contraseña introducida por el usuario.
+   */
   public static String askPassword(Scanner in) {
     System.out.println("Introduce una contraseña para poder recuperar la partida:");
     String password = in.nextLine();
@@ -351,6 +592,14 @@ public class FProject {
     return password;
   }
 
+  /**
+   * 
+   * Pregunta al usuario si desea guardar o sobreescribir su puntuación.
+   *
+   * @param in Variable para entrada de teclado.
+   * @return true si el usuario quiere guardar/sobreescribir su puntuación, false
+   *         en caso contrario.
+   */
   public static boolean wantSaveUserData(Scanner in) {
     String saveUserDataAnswer;
     boolean saveUserData;
@@ -409,7 +658,7 @@ public class FProject {
   public static String[] getSavedGameInfo() {
 
     File file = new File(tableSavedFilePath);
-    String[] savedGameInfo = {};
+    String[] savedGameInfo = new String[0];
 
     try {
       Scanner readFile = new Scanner(file);
@@ -445,7 +694,7 @@ public class FProject {
 
       readFile.close();
     } catch (FileNotFoundException e) {
-      System.out.println("No se ha encontrado el archivo de guardado.");
+
     }
 
     return savedGame;
@@ -534,8 +783,7 @@ public class FProject {
    */
   public static String encryptPassword(String password) {
     String encryptedPassword = "";
-    String rotateString = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0246813579";
-    
+
     for (int i = password.length() - 1; i >= 0; i--) {
       int rotatedIndex = (rotateString.indexOf(password.charAt(i)) + password.length()) % rotateString.length();
       encryptedPassword += rotateString.charAt(rotatedIndex);
@@ -567,7 +815,7 @@ public class FProject {
 
     for (int row = 0; row < table.length; row++) {
       for (int column = 0; column < table[0].length; column++) {
-        if (table[row][column] == hintNumber) {
+        if (table[row][column] == defaultSymbolNumbers[3]) {
           lastHintCoordenates[0] = row;
           lastHintCoordenates[1] = column;
         }
@@ -588,43 +836,45 @@ public class FProject {
 
     int maxValue = 0;
     // Tabla de solución con más valores iguales a lo que está haciendo el usuario
-    int maxValueIndex = 0;
+    // por si existiera más de una solución.
+    int maxCoincidenceValueIndex = 0;
 
     for (int i = 0; i < sameValues.length; i++) {
       if (sameValues[i] > maxValue) {
         maxValue = sameValues[i];
-        maxValueIndex = i;
+        maxCoincidenceValueIndex = i;
       }
     }
 
     if (!isFullTable(newTable)) {
-      // TODO: DARLE EL ERROR AL USUARIO EN LUGAR DE LA PISTA???
       int[] randomCoordenates = new int[2];
 
       do {
-        randomCoordenates[0] = (int) (Math.random() * solvedTables[maxValueIndex].length);
-        randomCoordenates[1] = (int) (Math.random() * solvedTables[maxValueIndex][0].length);
+        randomCoordenates[0] = (int) (Math.random() * solvedTables[maxCoincidenceValueIndex].length);
+        randomCoordenates[1] = (int) (Math.random() * solvedTables[maxCoincidenceValueIndex][0].length);
 
       } while (newTable[randomCoordenates[0]][randomCoordenates[1]] != 0);
 
-      System.out.println("Deberías poner una "
-          + ((solvedTables[maxValueIndex][randomCoordenates[0]][randomCoordenates[1]] == 1) ? OStart : XStart)
-          + " en la fila " + (randomCoordenates[0] + 1) + " y columna " + ((char) ('A' + randomCoordenates[1])) + ".");
+      System.out.println(
+          "Deberías poner una "
+              + ((solvedTables[maxCoincidenceValueIndex][randomCoordenates[0]][randomCoordenates[1]] == 1)
+                  ? symbols[2]
+                  : symbols[1])
+              +
+              " en la fila " + (randomCoordenates[0] + 1) +
+              " y columna " + ((char) ('A' + randomCoordenates[1])) +
+              ".");
 
-      System.out.println("f: " + newTable[0][0]);
-
-      newTable[randomCoordenates[0]][randomCoordenates[1]] = hintNumber;
+      newTable[randomCoordenates[0]][randomCoordenates[1]] = defaultSymbolNumbers[3];
 
       if (lastHintCoordenates[0] != -1 && lastHintCoordenates[1] != -1)
         newTable[lastHintCoordenates[0]][lastHintCoordenates[1]] = 0;
-
-      System.out.println("s: " + newTable[0][0]);
 
     } else {
       boolean failFound = false;
       for (int row = 0; row < newTable.length && !failFound; row++) {
         for (int column = 0; column < newTable[0].length && !failFound; column++) {
-          if (newTable[row][column] != solvedTables[maxValueIndex][row][column]) {
+          if (newTable[row][column] != solvedTables[maxCoincidenceValueIndex][row][column]) {
             failFound = true;
             System.out.println("Hay un error en la fila " + (row + 1) + " y columna " + ((char) ('A' + column)) + ".");
           }
@@ -681,15 +931,12 @@ public class FProject {
 
             for (int column = 0; column < solvedTables[i][0].length; column++) {
 
-              switch (solvedTables[i][row][column]) {
-                case 2:
-                case 4:
-                  xCont++;
-                  break;
-                case 1:
-                case 3:
-                  oCont++;
-                  break;
+              if (solvedTables[i][row][column] == defaultSymbolNumbers[1]
+                  || solvedTables[i][row][column] == symbolsStartNumbers[0]) {
+                xCont++;
+              } else if (solvedTables[i][row][column] == defaultSymbolNumbers[2]
+                  || solvedTables[i][row][column] == symbolsStartNumbers[1]) {
+                oCont++;
               }
 
               if (xCont >= solvedTables[i][0].length / 2 || oCont >= solvedTables[i][0].length / 2) {
@@ -735,15 +982,12 @@ public class FProject {
 
             for (int row = 0; row < solvedTables[i].length; row++) {
 
-              switch (solvedTables[i][row][column]) {
-                case 2:
-                case 4:
-                  xCont++;
-                  break;
-                case 1:
-                case 3:
-                  oCont++;
-                  break;
+              if (solvedTables[i][row][column] == defaultSymbolNumbers[1]
+                  || solvedTables[i][row][column] == symbolsStartNumbers[0]) {
+                xCont++;
+              } else if (solvedTables[i][row][column] == defaultSymbolNumbers[2]
+                  || solvedTables[i][row][column] == symbolsStartNumbers[1]) {
+                oCont++;
               }
 
               if (xCont >= solvedTables[i].length / 2 || oCont >= solvedTables[i].length / 2) {
@@ -959,20 +1203,6 @@ public class FProject {
 
   /**
    * 
-   * Crea un array de las matrices de juego, inicializando está en un array con el
-   * tablero incial para ir añadiendo jugadas posteriormente.
-   * 
-   * @param table String codificado como indica el enunciado. (más explicado
-   *              en createTable())
-   * @return Array de matrices de juego
-   */
-  public static int[][][] createArrayOfTables(int[][] table) {
-    int[][][] tables = { table };
-    return tables;
-  }
-
-  /**
-   * 
    * Añade una matriz de juego al array de matrices de juego.
    * 
    * @param table  Matriz del tablero actual.
@@ -1021,17 +1251,17 @@ public class FProject {
    * @param tables array de matrices de juego
    * @return array de matrices de juego quitando la última matriz
    */
-  public static int[][][] previousTable(int[][] table, int[][][] tables) {
+  public static int[][][] previousTable(int[][][] tables) {
 
-    int[][][] newTables = new int[tables.length - 1][table.length][table[0].length];
+    int[][][] newTables = new int[tables.length - 1][tables[0].length][tables[0][0].length];
 
     // Replico el array de matrices tables en un nuevo array de matrices pero sin
     // añadir el último.
     for (int i = 0; i < newTables.length; i++) {
 
-      for (int row = 0; row < table.length; row++) {
+      for (int row = 0; row < newTables[0].length; row++) {
 
-        for (int column = 0; column < table[0].length; column++) {
+        for (int column = 0; column < newTables[0][0].length; column++) {
 
           newTables[i][row][column] = tables[i][row][column];
 
@@ -1039,18 +1269,6 @@ public class FProject {
 
       }
 
-    }
-
-    // Establezco los valores de tablero al úlimo elemento de newTables, que se
-    // trata
-    // del tablero de la anterior jugada
-    for (int row = 0; row < table.length; row++) {
-
-      for (int column = 0; column < table[0].length; column++) {
-
-        table[row][column] = newTables[newTables.length - 1][row][column];
-
-      }
     }
 
     return newTables;
@@ -1090,7 +1308,7 @@ public class FProject {
   public static boolean confirmExit(Scanner in) {
 
     System.out.println("Estas seguro de que quieres salir? (s -> sí | n -> cancelar)");
-    String confirmExitStr = in.nextLine();
+    String confirmExitStr = myToLowerCase(in.nextLine());
 
     boolean confirmExit = confirmExitStr.equals("s") ? true : false;
 
@@ -1202,18 +1420,16 @@ public class FProject {
     int userInputNumberInt = (userInputNumber - '0') - 1;
     int userInputCharacterInt = userInputCharacter - 'a';
 
-    switch (newTable[userInputNumberInt][userInputCharacterInt]) {
-      case 0:
-      case hintNumber:
-        newTable[userInputNumberInt][userInputCharacterInt] = 2;
-        break;
-      case 1:
-        newTable[userInputNumberInt][userInputCharacterInt] = 0;
-        break;
-      case 2:
-        newTable[userInputNumberInt][userInputCharacterInt] = 1;
-        break;
-    }
+    if (newTable[userInputNumberInt][userInputCharacterInt] == defaultSymbolNumbers[0]
+        || newTable[userInputNumberInt][userInputCharacterInt] == defaultSymbolNumbers[3])
+      newTable[userInputNumberInt][userInputCharacterInt] = defaultSymbolNumbers[1];
+
+    else if (newTable[userInputNumberInt][userInputCharacterInt] == defaultSymbolNumbers[2])
+      newTable[userInputNumberInt][userInputCharacterInt] = defaultSymbolNumbers[0];
+
+    else if (newTable[userInputNumberInt][userInputCharacterInt] == defaultSymbolNumbers[1])
+      newTable[userInputNumberInt][userInputCharacterInt] = defaultSymbolNumbers[2];
+
     if (isFullTable(newTable)) {
       System.out.println("Has llenado el tablero. Si quieres comprobar si has ganado, pulsa ENTER.");
     }
@@ -1252,19 +1468,16 @@ public class FProject {
 
       for (int column = 0; column < table[row].length && validTable; column++) {
 
-        switch (table[row][column]) {
-          case 2:
-          case 4:
-            xCont++;
-            xAdjacentCont++;
-            oAdjacentCont = 0;
-            break;
-          case 1:
-          case 3:
-            oCont++;
-            oAdjacentCont++;
-            xAdjacentCont = 0;
-            break;
+        if (table[row][column] == defaultSymbolNumbers[1] || table[row][column] == symbolsStartNumbers[0]) {
+          xCont++;
+          xAdjacentCont++;
+          oAdjacentCont = 0;
+        } else if (table[row][column] == defaultSymbolNumbers[2] || table[row][column] == symbolsStartNumbers[1]) {
+          oCont++;
+          oAdjacentCont++;
+          xAdjacentCont = 0;
+        } else {
+          validTable = false;
         }
 
         if (xAdjacentCont > 2 || xAdjacentCont > 2) {
@@ -1313,22 +1526,16 @@ public class FProject {
 
       for (int row = 0; row < table.length && validTable; row++) {
 
-        switch (table[row][column]) {
-          case 2:
-          case 4:
-            xCont++;
-            xAdjacentCont++;
-            oAdjacentCont = 0;
-            break;
-          case 1:
-          case 3:
-            oCont++;
-            oAdjacentCont++;
-            xAdjacentCont = 0;
-            break;
-          default:
-            validTable = false;
-            break;
+        if (table[row][column] == defaultSymbolNumbers[1] || table[row][column] == symbolsStartNumbers[0]) {
+          xCont++;
+          xAdjacentCont++;
+          oAdjacentCont = 0;
+        } else if (table[row][column] == defaultSymbolNumbers[2] || table[row][column] == symbolsStartNumbers[1]) {
+          oCont++;
+          oAdjacentCont++;
+          xAdjacentCont = 0;
+        } else {
+          validTable = false;
         }
 
         if (oAdjacentCont > 2 || xAdjacentCont > 2) {
@@ -1389,6 +1596,9 @@ public class FProject {
    *                      100001".
    *                      Las cadenas individuales tienen que tener la longitud
    *                      del ancho y tiene que haber tantas cadenas como altura
+   * @param setStartGaps  Valor booleano que indica si se deben añadir 2 a los 1 y
+   *                      2 del tablero para diferenciar los valores iniciales de
+   *                      los que se van a ir añadiendo.
    * 
    * @return La matriz del tablero creado rellenada con ceros, unos y doses
    */
@@ -1436,26 +1646,18 @@ public class FProject {
 
       for (int column = 0; column < table[row].length; column++) {
 
-        switch (table[row][column]) {
-          case 1:
-            gapToDraw = O;
-            break;
-          case 2:
-            gapToDraw = X;
-            break;
-          case 3:
-            gapToDraw = OStart;
-            break;
-          case 4:
-            gapToDraw = XStart;
-            break;
-          case 5:
-            gapToDraw = hintSymbol; // En caso de que haya un 5, se trata de una pista y se dibuja un ?. Después se
-                                    // vuelve a poner a 0.
-            break;
-          default:
-            gapToDraw = ' ';
-            break;
+        if (table[row][column] == defaultSymbolNumbers[2]) {
+          gapToDraw = symbols[2];
+        } else if (table[row][column] == defaultSymbolNumbers[1]) {
+          gapToDraw = symbols[1];
+        } else if (table[row][column] == symbolsStartNumbers[1]) {
+          gapToDraw = symbolsStart[1];
+        } else if (table[row][column] == symbolsStartNumbers[0]) {
+          gapToDraw = symbolsStart[0];
+        } else if (table[row][column] == defaultSymbolNumbers[3]) {
+          gapToDraw = symbols[3];
+        } else {
+          gapToDraw = symbols[0];
         }
 
         System.out.print(gapToDraw + " ");
@@ -1463,6 +1665,36 @@ public class FProject {
       }
     }
     System.out.println();
+  }
+
+  /**
+   * 
+   * En caso de que el fichero de tableros no esté con 0, 1, 2 lo cambia para
+   * poder operar con los números.
+   * 
+   * @param tableString String del tablero a cambiar.
+   * @return String del tablero cambiado.
+   */
+  public static String changeValuesToDefaultValues(String tableString) {
+    String newTableString = "";
+
+    for (int i = 0; i < tableString.length(); i++) {
+      int valueToChange = tableString.charAt(i) - '0';
+      char newValue = ' ';
+
+      if (valueToChange == symbolNumbers[0])
+        newValue = (char) (defaultSymbolNumbers[0] + '0');
+
+      else if (valueToChange == symbolNumbers[1])
+        newValue = (char) (defaultSymbolNumbers[1] + '0');
+
+      else if (valueToChange == symbolNumbers[2])
+        newValue = (char) (defaultSymbolNumbers[2] + '0');
+
+      newTableString += ("" + newValue);
+    }
+
+    return newTableString;
   }
 
   /**
@@ -1478,20 +1710,12 @@ public class FProject {
     File tablesFile = new File(tablesFilePath);
 
     // Tablero por defecto en caso de no encontrar el archivo
-    String tableString = "002000 000000 100120 000100 000020 110200";
+    String tableString = "";
 
     try {
       Scanner readFile = new Scanner(tablesFile);
-      int lines = 0;
 
-      while (readFile.hasNextLine()) {
-        readFile.nextLine();
-        lines++;
-      }
-
-      readFile.close();
-
-      readFile = new Scanner(tablesFile);
+      int lines = countFileLines(tablesFile);
 
       String[] arrayLines = new String[lines];
 
@@ -1508,6 +1732,7 @@ public class FProject {
 
       if (playedTables.length != lines) {
         do {
+          isAlreadyPlayed = false;
           random = (int) (Math.random() * lines);
           for (int i = 0; i < playedTables.length && !isAlreadyPlayed; i++) {
             if (playedTables[i].equals(arrayLines[random]))
@@ -1516,10 +1741,13 @@ public class FProject {
         } while (isAlreadyPlayed);
       }
 
-      if (comprobateTableString(tableString, height, width))
+      arrayLines[random] = changeValuesToDefaultValues(arrayLines[random]);
+
+      if (comprobateTableString(arrayLines[random], height, width))
         tableString = arrayLines[random];
       else
-        System.out.println("El tablero elegido del fichero no es válido. Se jugará con el tablero por defecto.");
+        System.out
+            .println("El tablero elegido del fichero no es válido, comprueba el fichero y el tamaño establecido.");
     } catch (FileNotFoundException e) {
       System.out.println("El archivo de tableros no se ha encontrado. Se jugará con el tablero por defecto.");
     }
