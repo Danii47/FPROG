@@ -25,13 +25,5 @@ public class Calculando {
     System.out.println("\n\u001B[34m20-n*5/8 | " + (20 - n * 5 / 8));
     System.out.println("\n\u001B[31m(int) 7.8 | " + ((int) 7.8) + "\n\u001B[0m");
     
-    
-    
-    
-    
-    
-    
-    
-    
   }
 }
