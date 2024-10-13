@@ -50,17 +50,17 @@ public class FProject {
   /**
    * Ruta del archivo de tableros.
    */
-  public static final String tablesFilePath = "./tableros.txt";
+  public static final String tablesFilePath = "./ProyectoFinal/tableros.txt";
 
   /**
    * Ruta del archivo de partida guardada.
    */
-  public static final String tableSavedFilePath = "./saveGame.txt";
+  public static final String tableSavedFilePath = "./ProyectoFinal/saveGame.txt";
 
   /**
    * Ruta del archivo de puntuaciones.
    */
-  public static final String rankingFilePath = "./ranking.txt";
+  public static final String rankingFilePath = "./ProyectoFinal/ranking.txt";
 
   /**
    * String de rotación para encriptar la contraseña.
@@ -221,7 +221,7 @@ public class FProject {
 
     }
 
-    winPercentage = Math.round(((double) winGames / playedGames) * 10000) / 100;
+    winPercentage = Math.round(((double) winGames / playedGames) * 10000) / 100.0;
 
     System.out.println("Partidas jugadas: " + playedGames);
     System.out.println("Partidas ganadas: " + winGames);
@@ -258,7 +258,7 @@ public class FProject {
       }
 
       readRanking.close();
-
+      
       System.out.println("-------------------------------------------------------------");
       System.out.println("|                      RANKING GENERAL                      |");
       System.out.println("-------------------------------------------------------------");
@@ -286,7 +286,7 @@ public class FProject {
         }
 
         double average = (totalPlayedGamesNumber > 0)
-            ? Math.round(((double) totalWinGames / totalPlayedGamesNumber) * 10000) / 100
+            ? Math.round(((double) totalWinGames / totalPlayedGamesNumber) * 10000) / 100.0
             : 0;
 
         System.out.print("| " + rankingData[i] + "    ");
@@ -522,7 +522,7 @@ public class FProject {
 
     if (!isValidGameInfo) {
       System.out.println("El archivo de guardado está corrupto.");
-      System.out.println("Cancelando recuperación de partida...");
+      System.out.println("Cancelando recuperación de partida... Se jugará un tablero del fichero de tableros.");
     }
 
     return isValidGameInfo;
@@ -607,9 +607,9 @@ public class FProject {
     do {
       System.out.println("¿Quieres guardar/sobreescribir tu puntuación? (s -> sí | n -> cancelar)");
       saveUserDataAnswer = myToLowerCase(in.nextLine());
-
+      
       saveUserData = (saveUserDataAnswer.equals("s")) ? true : false;
-
+      
     } while (!saveUserDataAnswer.equals("s") && !saveUserDataAnswer.equals("n"));
 
     return saveUserData;
