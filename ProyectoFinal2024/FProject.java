@@ -5,6 +5,8 @@ import java.util.Scanner;
 public class FProject {
 
   final static char[] SIMBOLOS_CUADRITO = { '#', '*' };
+  final static String RUTA_ARCHIVO_PARTIDA_GUARDADA = "./ficheros/partidaGuardada.txt";
+  final static String RUTA_ARCHIVO_RESULTADOS = "./ficheros/resultados.txt";
 
   public static void main(String[] args) {
     int opcion, maxJugadas, jugadas, turno;
