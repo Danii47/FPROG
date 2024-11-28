@@ -2,6 +2,8 @@ public class CancionEjercicio {
   
   public static void main(String[] args) {
     Cancion cancion1 = new Cancion("Quevedo: Bzrp Music Sessions, Vol. 52", "Bizarrap & Quevedo");
+
+    System.out.println(cancion1.getTitulo());
   }
 
 }
