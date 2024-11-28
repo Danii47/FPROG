@@ -3,40 +3,61 @@ package ProyectoFinal2024;
 import java.util.Scanner;
 
 public class FProject {
+
+  final static char[] SIMBOLOS_CUADRITO = { '#', '*' };
+
   public static void main(String[] args) {
-    int opcion;
-    boolean guardarYSalir;
-    char[][] tablero;
+    int opcion, maxJugadas, jugadas, turno;
+
+    boolean guardarYSalir, otraPartida;
+
     String[] jugadores = { "Jugador 1", "Jugador 2" };
-    int[] puntuaciones = { 0, 0 };
-    int jugadas = 0;
+    int[] dimensiones;
+    char[][] tablero;
+
     Scanner in = new Scanner(System.in);
-    int turno = Math.random() < 0.5 ? 0 : 1;
 
     do {
       opcion = menu(in);
 
       switch (opcion) {
         case 1:
-          int[] dimensiones = pedirDimensiones(in);
+        
+        
+        do {
+            dimensiones = pedirDimensiones(in);
+            tablero = crearTablero(dimensiones[0], dimensiones[1]);
+            maxJugadas = obtenerMaxJugadas(tablero);
+            jugadas = 0;
+            turno = Math.random() < 0.5 ? 0 : 1;
 
-          tablero = crearTablero(dimensiones[0], dimensiones[1]);
-
-          do {
+            do {
+              dibujarTablero(tablero);
+              guardarYSalir = colocarPalito(tablero, jugadores[turno], turno, in);
+              
+              if (!guardarYSalir) {
+                turno = turno == 0 ? 1 : 0;
+                jugadas++;
+              } else {
+                System.out.println("Partida guardada.");
+              }
+            } while (!guardarYSalir && jugadas < maxJugadas);
+  
             dibujarTablero(tablero);
-            guardarYSalir = colocarPalito(tablero, jugadores[turno], in);
-            // TODO: Comprobar si ha completado cuadrito, sumar puntos y rellenarlo
+  
             if (!guardarYSalir) {
-              turno = turno == 0 ? 1 : 0;
-              jugadas++;
+              System.out.println("Juego Terminado!!");
+              mostrarResultados(tablero, jugadores);
+              otraPartida = preguntarOtraPartida(in);
             } else {
-              System.out.println("Partida guardada.");
+              // guardarPartida(tablero, jugadores, turno);
+              otraPartida = false;
             }
 
 
-          } while (!guardarYSalir && jugadas < tablero.length * tablero[0].length);
+          } while (otraPartida);
 
-          
+          break;
         case 2:
           System.out.println("Cargar Partida");
           break;
@@ -155,7 +176,7 @@ public class FProject {
 
   public static boolean letraEnTablero(char[][] tablero, char letra) {
     boolean encontrada = false;
-    
+
     for (int i = 0; i < tablero.length; i++) {
       for (int j = 0; j < tablero[i].length; j++) {
         if (tablero[i][j] == letra) {
@@ -167,24 +188,26 @@ public class FProject {
     return encontrada;
   }
 
-  public static boolean colocarPalito(char[][] tablero, String jugador, Scanner in) {
+  public static boolean colocarPalito(char[][] tablero, String nombreJugador, int turno, Scanner in) {
     String posicion;
-    boolean retorno = true;
+    boolean guardarYSalir = true, letraEnTablero;
 
     do {
-      System.out.print("[" + jugador + "] Próximo palito (** para guardar y salir): ");
+      System.out.print("[" + nombreJugador + "] Próximo palito (** para guardar y salir): ");
 
       posicion = in.nextLine();
 
-      if (posicion.length() != 1 || !letraEnTablero(tablero, posicion.charAt(0))) {
+      letraEnTablero = letraEnTablero(tablero, posicion.charAt(0));
+
+      if (posicion.length() != 1 || !letraEnTablero) {
         System.out.println("ERROR: Posición incorrecta.");
       }
 
-    } while ((posicion.length() != 1 || !letraEnTablero(tablero, posicion.charAt(0))) && !posicion.equals("**"));
+    } while ((posicion.length() != 1 || !letraEnTablero) && !posicion.equals("**"));
 
     if (!posicion.equals("**")) {
       char caracter = posicion.charAt(0);
-  
+
       for (int i = 0; i < tablero.length; i++) {
         for (int j = 0; j < tablero[i].length; j++) {
           if (tablero[i][j] == caracter) {
@@ -199,10 +222,74 @@ public class FProject {
         }
       }
 
-      retorno = false;
+      ponerCuadritos(tablero, turno);
+
+      guardarYSalir = false;
     }
 
-    return retorno;
+    return guardarYSalir;
   }
 
+  public static void ponerCuadritos(char[][] tablero, int turno) {
+    for (int i = 2; i < tablero.length; i += 2) {
+      for (int j = 2; j < tablero[i].length; j += 4) {
+        if (tablero[i][j] == '-' &&
+            tablero[i - 1][j - 2] == '|' &&
+            tablero[i - 1][j + 2] == '|' &&
+            tablero[i - 2][j] == '-' &&
+            tablero[i - 1][j] == ' ') {
+          tablero[i - 1][j] = SIMBOLOS_CUADRITO[turno];
+        }
+      }
+    }
+  }
+
+  public static int obtenerMaxJugadas(char[][] tablero) {
+    int maxJugadas = 0;
+
+    for (int i = 0; i < tablero.length; i++) {
+      for (int j = 0; j < tablero[i].length; j++) {
+        if (tablero[i][j] != '·' && tablero[i][j] != ' ') {
+          maxJugadas++;
+        }
+      }
+    }
+
+    return maxJugadas;
+  }
+
+  public static void mostrarResultados(char[][] tablero, String[] jugadores) {
+    int[] puntos = { 0, 0 };
+
+    for (int i = 1; i < tablero.length; i += 2) {
+      for (int j = 2; j < tablero[i].length; j += 4) {
+        if (tablero[i][j] == SIMBOLOS_CUADRITO[0]) {
+          puntos[0]++;
+        } else if (tablero[i][j] == SIMBOLOS_CUADRITO[1]) {
+          puntos[1]++;
+        }
+      }
+    }
+
+    for (int i = 0; i < jugadores.length; i++) {
+      System.out.println(jugadores[i] + ": " + puntos[i] + " cuadrado/s");
+    }
+  }
+  
+  public static boolean preguntarOtraPartida(Scanner in) {
+    String respuesta;
+
+    do {
+      System.out.print("¿Quieres jugar otra partida? (s/n): ");
+
+      respuesta = in.nextLine();
+
+      if (respuesta.length() != 1 || (respuesta.charAt(0) != 's' && respuesta.charAt(0) != 'n')) {
+        System.out.println("ERROR: Respuesta incorrecta.");
+      }
+
+    } while (respuesta.length() != 1 || (respuesta.charAt(0) != 's' && respuesta.charAt(0) != 'n'));
+
+    return respuesta.charAt(0) == 's';
+  }
 }
