@@ -5,9 +5,13 @@ import java.util.Scanner;
 public class FProject {
   public static void main(String[] args) {
     int opcion;
+    boolean guardarYSalir;
     char[][] tablero;
-
+    String[] jugadores = { "Jugador 1", "Jugador 2" };
+    int[] puntuaciones = { 0, 0 };
+    int jugadas = 0;
     Scanner in = new Scanner(System.in);
+    int turno = Math.random() < 0.5 ? 0 : 1;
 
     do {
       opcion = menu(in);
@@ -18,14 +22,21 @@ public class FProject {
 
           tablero = crearTablero(dimensiones[0], dimensiones[1]);
 
-          for (int i = 0; i < tablero.length; i++) {
-            for (int j = 0; j < tablero[i].length; j++) {
-              System.out.print(tablero[i][j]);
+          do {
+            dibujarTablero(tablero);
+            guardarYSalir = colocarPalito(tablero, jugadores[turno], in);
+            // TODO: Comprobar si ha completado cuadrito, sumar puntos y rellenarlo
+            if (!guardarYSalir) {
+              turno = turno == 0 ? 1 : 0;
+              jugadas++;
+            } else {
+              System.out.println("Partida guardada.");
             }
-            System.out.println();
-          }
 
-          break;
+
+          } while (!guardarYSalir && jugadas < tablero.length * tablero[0].length);
+
+          
         case 2:
           System.out.println("Cargar Partida");
           break;
@@ -38,10 +49,9 @@ public class FProject {
       }
     } while (opcion != 4);
 
-
     in.close();
   }
-  
+
   public static int menu(Scanner in) {
     String opcion;
 
@@ -101,14 +111,12 @@ public class FProject {
 
     return dimensiones;
   }
-  
+
   public static char[][] crearTablero(int filas, int columnas) {
     char[][] tablero = new char[filas * 2 + 1][columnas * 4 + 1];
 
     String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    int contador = 0; // 5 -> 5 * 4 + 1 = 21
-                      // 4 -> 4 * 4 + 1 = 17 · A · B · C · D ·
-                      // 3 -> 3 * 4 + 1 = 13
+    int contador = 0;
 
     for (int i = 0; i < tablero.length; i++) {
       for (int j = 0; j < tablero[i].length; j++) {
@@ -129,10 +137,72 @@ public class FProject {
             tablero[i][j] = ' ';
           }
         }
-        
+
       }
     }
 
     return tablero;
   }
+
+  public static void dibujarTablero(char[][] tablero) {
+    for (int i = 0; i < tablero.length; i++) {
+      for (int j = 0; j < tablero[i].length; j++) {
+        System.out.print(tablero[i][j]);
+      }
+      System.out.println();
+    }
+  }
+
+  public static boolean letraEnTablero(char[][] tablero, char letra) {
+    boolean encontrada = false;
+    
+    for (int i = 0; i < tablero.length; i++) {
+      for (int j = 0; j < tablero[i].length; j++) {
+        if (tablero[i][j] == letra) {
+          encontrada = true;
+        }
+      }
+    }
+
+    return encontrada;
+  }
+
+  public static boolean colocarPalito(char[][] tablero, String jugador, Scanner in) {
+    String posicion;
+    boolean retorno = true;
+
+    do {
+      System.out.print("[" + jugador + "] Próximo palito (** para guardar y salir): ");
+
+      posicion = in.nextLine();
+
+      if (posicion.length() != 1 || !letraEnTablero(tablero, posicion.charAt(0))) {
+        System.out.println("ERROR: Posición incorrecta.");
+      }
+
+    } while ((posicion.length() != 1 || !letraEnTablero(tablero, posicion.charAt(0))) && !posicion.equals("**"));
+
+    if (!posicion.equals("**")) {
+      char caracter = posicion.charAt(0);
+  
+      for (int i = 0; i < tablero.length; i++) {
+        for (int j = 0; j < tablero[i].length; j++) {
+          if (tablero[i][j] == caracter) {
+            if (i % 2 == 0) {
+              tablero[i][j - 1] = '-';
+              tablero[i][j] = '-';
+              tablero[i][j + 1] = '-';
+            } else {
+              tablero[i][j] = '|';
+            }
+          }
+        }
+      }
+
+      retorno = false;
+    }
+
+    return retorno;
+  }
+
 }
