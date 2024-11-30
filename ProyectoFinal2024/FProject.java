@@ -1,5 +1,9 @@
 package ProyectoFinal2024;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 
 public class FProject {
@@ -14,7 +18,7 @@ public class FProject {
     boolean guardarYSalir, otraPartida;
 
     String[] jugadores = { "Jugador 1", "Jugador 2" };
-    int[] dimensiones;
+    int[] dimensiones, resultados;
     char[][] tablero;
 
     Scanner in = new Scanner(System.in);
@@ -49,7 +53,9 @@ public class FProject {
   
             if (!guardarYSalir) {
               System.out.println("Juego Terminado!!");
-              mostrarResultados(tablero, jugadores);
+              resultados = obtenerResultados(tablero, jugadores);
+              mostrarResultados(resultados, jugadores);
+              guardarResultados(dimensiones, jugadores, resultados);
               otraPartida = preguntarOtraPartida(in);
             } else {
               // guardarPartida(tablero, jugadores, turno);
@@ -260,21 +266,25 @@ public class FProject {
     return maxJugadas;
   }
 
-  public static void mostrarResultados(char[][] tablero, String[] jugadores) {
-    int[] puntos = { 0, 0 };
+  public static int[] obtenerResultados(char[][] tablero, String[] jugadores) {
+    int[] puntos = new int[jugadores.length];
 
     for (int i = 1; i < tablero.length; i += 2) {
       for (int j = 2; j < tablero[i].length; j += 4) {
-        if (tablero[i][j] == SIMBOLOS_CUADRITO[0]) {
-          puntos[0]++;
-        } else if (tablero[i][j] == SIMBOLOS_CUADRITO[1]) {
-          puntos[1]++;
+        for (int k = 0; k < SIMBOLOS_CUADRITO.length; k++) {
+          if (tablero[i][j] == SIMBOLOS_CUADRITO[k]) {
+            puntos[k]++;
+          }
         }
       }
     }
 
+    return puntos;
+  }
+
+  public static void mostrarResultados(int[] resultados, String[] jugadores) {
     for (int i = 0; i < jugadores.length; i++) {
-      System.out.println(jugadores[i] + ": " + puntos[i] + " cuadrado/s");
+      System.out.println(jugadores[i] + ": " + resultados[i] + " cuadrado/s");
     }
   }
   
@@ -293,5 +303,36 @@ public class FProject {
     } while (respuesta.length() != 1 || (respuesta.charAt(0) != 's' && respuesta.charAt(0) != 'n'));
 
     return respuesta.charAt(0) == 's';
+  }
+
+  public static void guardarResultados(int[] dimensiones, String[] jugadores, int[] resultados) {
+    try (FileWriter archivoResultados = new FileWriter(RUTA_ARCHIVO_RESULTADOS, true)) {
+
+      String fechaActual = obtenerFechaActual();
+
+      archivoResultados.write("[" + fechaActual + "] Tam: " + dimensiones[0] + "x" + dimensiones[1] + "\t");
+      for (int i = 0; i < jugadores.length; i++) {
+        archivoResultados.write(jugadores[i] + ": " + resultados[i]);
+        if (i < jugadores.length - 1) {
+          archivoResultados.write(" vs. ");
+        }
+      }
+      
+      archivoResultados.write("\n");
+
+    } catch (IOException e) {
+      System.out.println("ERROR: No se ha encontrado el fichero de resultados.");
+
+    }
+  }
+
+  public static String obtenerFechaActual() {
+    Date fechaActual = new Date();
+
+    SimpleDateFormat formato = new SimpleDateFormat("[E MMM dd HH:mm:ss z yyyy]");
+
+    String fechaFormateada = formato.format(fechaActual);
+
+    return fechaFormateada;
   }
 }

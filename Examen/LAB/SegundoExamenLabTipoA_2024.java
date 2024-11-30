@@ -7,8 +7,6 @@ import java.util.Scanner;
   de forma repetitiva un nuevo tamaño), la rellene de forma aleatoria con 3 valores: "Piedra", "Papel", "Tijera", y luego cuente cuántos
   valores hay de cada tipo.*
   NO SE PUEDE USAR NI equals(), euqlsIgnoreCase(), compareTo() ni compareToIgnoreCase().
-
-
 */
 
 public class SegundoExamenLabTipoA_2024 {
@@ -50,13 +48,13 @@ public class SegundoExamenLabTipoA_2024 {
 
     int piedra = 0, papel = 0, tijera = 0;
 
-    // NO SE PUEDE USAR NI equals(), euqlsIgnoreCase(), compareTo() ni compareToIgnoreCase().
+    // NO SE PUEDE USAR NI equals(), equalsIgnoreCase(), compareTo() ni compareToIgnoreCase().
 
     for (int i = 0; i < matriz.length; i++) {
       for (int j = 0; j < matriz[i].length; j++) {
-        if (matriz[i][j].charAt(0) == 'P') { // Tambien: if (matriz[i][j].indexOf("Piedra") != -1)
+        if (matriz[i][j].indexOf("Piedra") != -1) { // Tambien: if (matriz[i][j].indexOf("Piedra") != -1)
           piedra++;
-        } else if (matriz[i][j].charAt(0) == 'T') { // Tambien: if (matriz[i][j].indexOf("Tijera") != -1)
+        } else if (matriz[i][j].indexOf("Tijera") != -1) { // Tambien: if (matriz[i][j].indexOf("Tijera") != -1)
           tijera++;
         } else {
           papel++;
