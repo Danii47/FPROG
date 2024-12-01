@@ -1,5 +1,7 @@
 package ProyectoFinal2024;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -9,8 +11,8 @@ import java.util.Scanner;
 public class FProject {
 
   final static char[] SIMBOLOS_CUADRITO = { '#', '*' };
-  final static String RUTA_ARCHIVO_PARTIDA_GUARDADA = "./ficheros/partidaGuardada.txt";
-  final static String RUTA_ARCHIVO_RESULTADOS = "./ficheros/resultados.txt";
+  final static String RUTA_ARCHIVO_PARTIDA_GUARDADA = "./ProyectoFinal2024/ficheros/partidaGuardada.txt";
+  final static String RUTA_ARCHIVO_RESULTADOS = "./ProyectoFinal2024/ficheros/resultados.txt";
 
   public static void main(String[] args) {
     int opcion, maxJugadas, jugadas, turno;
@@ -28,9 +30,8 @@ public class FProject {
 
       switch (opcion) {
         case 1:
-        
-        
-        do {
+
+          do {
             dimensiones = pedirDimensiones(in);
             tablero = crearTablero(dimensiones[0], dimensiones[1]);
             maxJugadas = obtenerMaxJugadas(tablero);
@@ -40,7 +41,7 @@ public class FProject {
             do {
               dibujarTablero(tablero);
               guardarYSalir = colocarPalito(tablero, jugadores[turno], turno, in);
-              
+
               if (!guardarYSalir) {
                 turno = turno == 0 ? 1 : 0;
                 jugadas++;
@@ -48,20 +49,19 @@ public class FProject {
                 System.out.println("Partida guardada.");
               }
             } while (!guardarYSalir && jugadas < maxJugadas);
-  
+
             dibujarTablero(tablero);
-  
+
             if (!guardarYSalir) {
               System.out.println("Juego Terminado!!");
               resultados = obtenerResultados(tablero, jugadores);
-              mostrarResultados(resultados, jugadores);
+              mostrarPuntuacionesPartida(resultados, jugadores);
               guardarResultados(dimensiones, jugadores, resultados);
               otraPartida = preguntarOtraPartida(in);
             } else {
-              // guardarPartida(tablero, jugadores, turno);
+              guardarPartida(tablero, jugadores, turno);
               otraPartida = false;
             }
-
 
           } while (otraPartida);
 
@@ -70,7 +70,7 @@ public class FProject {
           System.out.println("Cargar Partida");
           break;
         case 3:
-          System.out.println("Ver Resultados");
+          mostrarResultados();
           break;
         case 4:
           System.out.println("Salir");
@@ -282,12 +282,12 @@ public class FProject {
     return puntos;
   }
 
-  public static void mostrarResultados(int[] resultados, String[] jugadores) {
+  public static void mostrarPuntuacionesPartida(int[] resultados, String[] jugadores) {
     for (int i = 0; i < jugadores.length; i++) {
       System.out.println(jugadores[i] + ": " + resultados[i] + " cuadrado/s");
     }
   }
-  
+
   public static boolean preguntarOtraPartida(Scanner in) {
     String respuesta;
 
@@ -306,18 +306,45 @@ public class FProject {
   }
 
   public static void guardarResultados(int[] dimensiones, String[] jugadores, int[] resultados) {
-    try (FileWriter archivoResultados = new FileWriter(RUTA_ARCHIVO_RESULTADOS, true)) {
+
+    String[] lineas;
+    int numeroLineas = 0;
+
+    try (Scanner archivoResultados = new Scanner(new File(RUTA_ARCHIVO_RESULTADOS))) {
+      while (archivoResultados.hasNextLine()) {
+        numeroLineas++;
+        archivoResultados.nextLine();
+      }
+    } catch (FileNotFoundException e) {
+      System.out.println("ERROR: No se ha encontrado el fichero de resultados.");
+    }
+
+    lineas = new String[numeroLineas];
+
+    try (Scanner archivoResultados = new Scanner(new File(RUTA_ARCHIVO_RESULTADOS))) {
+      for (int i = 0; i < lineas.length; i++) {
+        lineas[i] = archivoResultados.nextLine();
+      }
+    } catch (FileNotFoundException e) {
+      System.out.println("ERROR: No se ha encontrado el fichero de resultados.");
+    }
+
+    try (FileWriter archivoResultados = new FileWriter(RUTA_ARCHIVO_RESULTADOS)) {
 
       String fechaActual = obtenerFechaActual();
 
-      archivoResultados.write("[" + fechaActual + "] Tam: " + dimensiones[0] + "x" + dimensiones[1] + "\t");
+      archivoResultados.write(fechaActual + " Tam: " + dimensiones[0] + "x" + dimensiones[1] + "\t");
       for (int i = 0; i < jugadores.length; i++) {
         archivoResultados.write(jugadores[i] + ": " + resultados[i]);
         if (i < jugadores.length - 1) {
           archivoResultados.write(" vs. ");
         }
       }
-      
+
+      for (int i = 0; i < lineas.length; i++) {
+        archivoResultados.write("\n" + lineas[i]);
+      }
+
       archivoResultados.write("\n");
 
     } catch (IOException e) {
@@ -334,5 +361,45 @@ public class FProject {
     String fechaFormateada = formato.format(fechaActual);
 
     return fechaFormateada;
+  }
+
+  public static void mostrarResultados() {
+    try (Scanner archivoResultados = new Scanner(new File(RUTA_ARCHIVO_RESULTADOS))) {
+      if (!archivoResultados.hasNextLine()) {
+        System.out.println("No hay resultados guardados.");
+      } else {
+        System.out.println();
+        while (archivoResultados.hasNextLine()) {
+          System.out.println(archivoResultados.nextLine());
+        }
+        System.out.println();
+      }
+
+    } catch (FileNotFoundException e) {
+      System.out.println("ERROR: No se ha encontrado el fichero de resultados.");
+    }
+  }
+
+  public static void guardarPartida(char[][] tablero, String[] jugadores, int turno) {
+    try (FileWriter archivoPartidaGuardada = new FileWriter(RUTA_ARCHIVO_PARTIDA_GUARDADA)) {
+
+      archivoPartidaGuardada.write(turno + "\n");
+
+      for (int i = 0; i < jugadores.length; i++) {
+        archivoPartidaGuardada.write(jugadores[i] + "-");
+      }
+
+      archivoPartidaGuardada.write("\n");
+
+      for (int i = 0; i < tablero.length; i++) {
+        for (int j = 0; j < tablero[i].length; j++) {
+          archivoPartidaGuardada.write(tablero[i][j]);
+        }
+        archivoPartidaGuardada.write("\n");
+      }
+
+    } catch (IOException e) {
+      System.out.println("ERROR: No se ha encontrado el fichero de partida guardada.");
+    }
   }
 }
