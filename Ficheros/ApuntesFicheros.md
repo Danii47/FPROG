@@ -2,9 +2,35 @@
 
 
 - [APUNTES DE FICHEROS EN JAVA](#apuntes-de-ficheros-en-java)
+  - [Try-Catch](#try-catch)
   - [File](#file)
   - [Scanner](#scanner)
   - [FileWriter](#filewriter)
+
+## Try-Catch
+
+El bloque `try-catch` se utiliza para manejar excepciones (errores) en Java. Un bloque `try-catch` consta de dos partes: el bloque `try` y el bloque `catch`. El bloque `try` contiene el código que puede lanzar una excepción, y el bloque `catch` contiene el código que maneja la excepción. Opcionalmente, se puede añadir un bloque `finally` que se ejecutará siempre, independientemente de si se lanza una excepción o no.
+
+A continuación, se muestra un ejemplo de cómo utilizar un bloque `try-catch` para manejar una excepción de tipo :
+
+```java
+import java.util.Scanner;
+import java.util.InputMismatchException;
+
+public class Main {
+  public static void main(String[] args) {
+    Scanner scanner = new Scanner(System.in);
+
+    try {
+      int n = scanner.nextInt();
+    } catch (InputMismatchException e) {
+      System.out.println("Error: No se ha introducido un número entero");
+    }
+  }
+}
+```
+
+En el ejemplo anterior, se ha utilizado un bloque `try-catch` para manejar una excepción de tipo `InputMismatchException`. Si el usuario introduce un valor que no es un número entero, se lanzará una excepción de tipo `InputMismatchException`, y el código dentro del bloque `catch` se ejecutará. En este caso, se imprimirá un mensaje de error en la consola pero **NO** se parará el programa por un fallo.
 
 
 ## File

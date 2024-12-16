@@ -1,4 +1,0 @@
-[[vie nov 29 12:11:11 CET 2024]] Tam: 1x1	Jugador 1: 0 vs. Jugador 2: 1
-[[vie nov 29 12:12:48 CET 2024]] Tam: 1x1	Jugador 1: 0 vs. Jugador 2: 1
-[[vie nov 29 12:21:52 CET 2024]] Tam: 2x2	Jugador 1: 3 vs. Jugador 2: 1
-[[sáb nov 30 19:15:22 CET 2024]] Tam: 1x1	Jugador 1: 1 vs. Jugador 2: 0
