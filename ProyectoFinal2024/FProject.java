@@ -13,13 +13,13 @@ public class FProject {
   final static char[] SIMBOLOS_CUADRITO = { '#', '*' };
   final static String RUTA_ARCHIVO_PARTIDA_GUARDADA = "./ProyectoFinal2024/ficheros/partidaGuardada.txt";
   final static String RUTA_ARCHIVO_RESULTADOS = "./ProyectoFinal2024/ficheros/resultados.txt";
+  final static String[] NOMBRES_JUGADORES = { "Jugador 1", "Jugador 2" };
 
   public static void main(String[] args) {
     int opcion, maxJugadas, jugadas, turno;
 
     boolean guardarYSalir, otraPartida;
 
-    String[] jugadores = { "Jugador 1", "Jugador 2" };
     int[] dimensiones, resultados;
     char[][] tablero;
 
@@ -30,17 +30,43 @@ public class FProject {
 
       switch (opcion) {
         case 1:
+        case 2:
 
           do {
-            dimensiones = pedirDimensiones(in);
-            tablero = crearTablero(dimensiones[0], dimensiones[1]);
-            maxJugadas = obtenerMaxJugadas(tablero);
+            if (opcion == 1) {
+
+              dimensiones = pedirDimensiones(in);
+              tablero = crearTablero(dimensiones[0], dimensiones[1]);
+              maxJugadas = obtenerMaxJugadas(tablero);
+              turno = Math.random() < 0.5 ? 0 : 1;
+
+            } else {
+              String[] datosPartidaGuardada = obtenerDatosFicheroPartidaGuardada();
+              
+              turno = datosPartidaGuardada[0].charAt(0) - '0';
+              dimensiones = new int[] { (datosPartidaGuardada[1].length() - 1) / 4, (datosPartidaGuardada.length - 1) / 2 };
+              
+              tablero = crearTablero(dimensiones[0], dimensiones[1]);
+              
+              for (int i = 1; i < datosPartidaGuardada.length - 1; i++) {
+                for (int j = 0; j < datosPartidaGuardada[i].length(); j++) {
+                  System.out.println(datosPartidaGuardada[i].charAt(j));
+                  tablero[i - 1][j] = datosPartidaGuardada[i].charAt(j);
+                }
+              }
+              
+              System.out.print(datosPartidaGuardada[1]);
+              System.out.print(datosPartidaGuardada[2]);
+              System.out.print(datosPartidaGuardada[3]);
+              System.out.println("-.");
+              maxJugadas = obtenerMaxJugadas(tablero);
+            }
+
             jugadas = 0;
-            turno = Math.random() < 0.5 ? 0 : 1;
 
             do {
               dibujarTablero(tablero);
-              guardarYSalir = colocarPalito(tablero, jugadores[turno], turno, in);
+              guardarYSalir = colocarPalito(tablero, turno, in);
 
               if (!guardarYSalir) {
                 turno = turno == 0 ? 1 : 0;
@@ -54,21 +80,19 @@ public class FProject {
 
             if (!guardarYSalir) {
               System.out.println("Juego Terminado!!");
-              resultados = obtenerResultados(tablero, jugadores);
-              mostrarPuntuacionesPartida(resultados, jugadores);
-              guardarResultados(dimensiones, jugadores, resultados);
+              resultados = obtenerResultados(tablero);
+              mostrarPuntuacionesPartida(resultados);
+              guardarResultados(dimensiones, resultados);
               otraPartida = preguntarOtraPartida(in);
             } else {
-              guardarPartida(tablero, jugadores, turno);
+              guardarPartida(tablero, turno);
               otraPartida = false;
             }
 
           } while (otraPartida);
 
           break;
-        case 2:
-          System.out.println("Cargar Partida");
-          break;
+
         case 3:
           mostrarResultados();
           break;
@@ -196,12 +220,12 @@ public class FProject {
     return encontrada;
   }
 
-  public static boolean colocarPalito(char[][] tablero, String nombreJugador, int turno, Scanner in) {
+  public static boolean colocarPalito(char[][] tablero, int turno, Scanner in) {
     String posicion;
     boolean guardarYSalir = true, letraEnTablero;
 
     do {
-      System.out.print("[" + nombreJugador + "] Próximo palito (** para guardar y salir): ");
+      System.out.print("[" + NOMBRES_JUGADORES[turno] + "] Próximo palito (** para guardar y salir): ");
 
       posicion = in.nextLine();
 
@@ -257,7 +281,7 @@ public class FProject {
 
     for (int i = 0; i < tablero.length; i++) {
       for (int j = 0; j < tablero[i].length; j++) {
-        if (tablero[i][j] != '·' && tablero[i][j] != ' ') {
+        if (tablero[i][j] != '·' && tablero[i][j] != ' ' && tablero[i][j] != '|' && tablero[i][j] != '-') {
           maxJugadas++;
         }
       }
@@ -266,8 +290,8 @@ public class FProject {
     return maxJugadas;
   }
 
-  public static int[] obtenerResultados(char[][] tablero, String[] jugadores) {
-    int[] puntos = new int[jugadores.length];
+  public static int[] obtenerResultados(char[][] tablero) {
+    int[] puntos = new int[NOMBRES_JUGADORES.length];
 
     for (int i = 1; i < tablero.length; i += 2) {
       for (int j = 2; j < tablero[i].length; j += 4) {
@@ -282,9 +306,9 @@ public class FProject {
     return puntos;
   }
 
-  public static void mostrarPuntuacionesPartida(int[] resultados, String[] jugadores) {
-    for (int i = 0; i < jugadores.length; i++) {
-      System.out.println(jugadores[i] + ": " + resultados[i] + " cuadrado/s");
+  public static void mostrarPuntuacionesPartida(int[] resultados) {
+    for (int i = 0; i < NOMBRES_JUGADORES.length; i++) {
+      System.out.println(NOMBRES_JUGADORES[i] + ": " + resultados[i] + " cuadrado/s");
     }
   }
 
@@ -305,7 +329,7 @@ public class FProject {
     return respuesta.charAt(0) == 's';
   }
 
-  public static void guardarResultados(int[] dimensiones, String[] jugadores, int[] resultados) {
+  public static void guardarResultados(int[] dimensiones, int[] resultados) {
 
     String contenido = "";
 
@@ -326,9 +350,9 @@ public class FProject {
       String fechaActual = obtenerFechaActual();
 
       archivoResultados.write(fechaActual + " Tam: " + dimensiones[0] + "x" + dimensiones[1] + "\t");
-      for (int i = 0; i < jugadores.length; i++) {
-        archivoResultados.write(jugadores[i] + ": " + resultados[i]);
-        if (i < jugadores.length - 1) {
+      for (int i = 0; i < NOMBRES_JUGADORES.length; i++) {
+        archivoResultados.write(NOMBRES_JUGADORES[i] + ": " + resultados[i]);
+        if (i < NOMBRES_JUGADORES.length - 1) {
           archivoResultados.write(" vs. ");
         }
       }
@@ -372,17 +396,11 @@ public class FProject {
     }
   }
 
-  public static void guardarPartida(char[][] tablero, String[] jugadores, int turno) {
+  public static void guardarPartida(char[][] tablero, int turno) {
     try {
       FileWriter archivoPartidaGuardada = new FileWriter(RUTA_ARCHIVO_PARTIDA_GUARDADA);
 
       archivoPartidaGuardada.write(turno + "\n");
-
-      for (int i = 0; i < jugadores.length; i++) {
-        archivoPartidaGuardada.write(jugadores[i] + ".");
-      }
-
-      archivoPartidaGuardada.write("\n");
 
       for (int i = 0; i < tablero.length; i++) {
         for (int j = 0; j < tablero[i].length; j++) {
@@ -396,5 +414,51 @@ public class FProject {
     } catch (IOException e) {
       System.out.println("ERROR: No se ha encontrado el fichero de partida guardada.");
     }
+  }
+
+  /**
+   * Obtiene los datos del fichero de partida guardada.
+   * 
+   * Formato (Array<String> de 3 elementos):
+   * - Turno (0 o 1)
+   * - Tablero
+   * 
+   * @return Array con el primer elemento el turno y el resto las lineas del
+   *         tablero
+   */
+  public static String[] obtenerDatosFicheroPartidaGuardada() {
+    int lineas = 0;
+    String[] datos = null;
+
+    try {
+      Scanner archivoLeerLineas = new Scanner(new File(RUTA_ARCHIVO_PARTIDA_GUARDADA));
+
+      while (archivoLeerLineas.hasNextLine()) {
+        archivoLeerLineas.nextLine();
+        lineas++;
+      }
+
+      archivoLeerLineas.close();
+
+      Scanner archivoPartidaGuardada = new Scanner(new File(RUTA_ARCHIVO_PARTIDA_GUARDADA));
+
+      datos = new String[lineas]; // El máximo de filas del tablero es 11 (pongo 15 por si acaso)
+
+      // Leer el turno (0 o 1)
+      datos[0] = archivoPartidaGuardada.nextLine();
+
+      // Leer el tablero
+      int i = 0;
+      while (archivoPartidaGuardada.hasNextLine() && i < datos.length) {
+        datos[i] = archivoPartidaGuardada.nextLine();
+        i++;
+      }
+
+      archivoPartidaGuardada.close();
+    } catch (FileNotFoundException e) {
+      System.out.println("ERROR: No se ha encontrado el fichero de partida guardada.");
+    }
+
+    return datos;
   }
 }
