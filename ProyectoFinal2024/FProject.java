@@ -42,24 +42,26 @@ public class FProject {
 
             } else {
               String[] datosPartidaGuardada = obtenerDatosFicheroPartidaGuardada();
-              
-              turno = datosPartidaGuardada[0].charAt(0) - '0';
-              dimensiones = new int[] { (datosPartidaGuardada[1].length() - 1) / 4, (datosPartidaGuardada.length - 1) / 2 };
-              
-              tablero = crearTablero(dimensiones[0], dimensiones[1]);
-              
-              for (int i = 1; i < datosPartidaGuardada.length - 1; i++) {
-                for (int j = 0; j < datosPartidaGuardada[i].length(); j++) {
-                  System.out.println(datosPartidaGuardada[i].charAt(j));
-                  tablero[i - 1][j] = datosPartidaGuardada[i].charAt(j);
+
+              if (datosPartidaGuardada != null) {
+                turno = datosPartidaGuardada[0].charAt(0) - '0';
+                dimensiones = new int[] { (datosPartidaGuardada[1].length() - 1) / 4, (datosPartidaGuardada.length - 1) / 2 };
+  
+                tablero = crearTablero(dimensiones[0], dimensiones[1]);
+  
+                for (int i = 1; i < datosPartidaGuardada.length; i++) {
+                  for (int j = 0; j < datosPartidaGuardada[i].length(); j++) {
+                    tablero[i - 1][j] = datosPartidaGuardada[i].charAt(j);
+                  }
                 }
+  
+                maxJugadas = obtenerMaxJugadas(tablero);
+              } else {
+                dimensiones = pedirDimensiones(in);
+                tablero = crearTablero(dimensiones[0], dimensiones[1]);
+                maxJugadas = obtenerMaxJugadas(tablero);
+                turno = Math.random() < 0.5 ? 0 : 1;
               }
-              
-              System.out.print(datosPartidaGuardada[1]);
-              System.out.print(datosPartidaGuardada[2]);
-              System.out.print(datosPartidaGuardada[3]);
-              System.out.println("-.");
-              maxJugadas = obtenerMaxJugadas(tablero);
             }
 
             jugadas = 0;
@@ -84,6 +86,7 @@ public class FProject {
               mostrarPuntuacionesPartida(resultados);
               guardarResultados(dimensiones, resultados);
               otraPartida = preguntarOtraPartida(in);
+              opcion = 1;
             } else {
               guardarPartida(tablero, turno);
               otraPartida = false;
@@ -97,7 +100,7 @@ public class FProject {
           mostrarResultados();
           break;
         case 4:
-          System.out.println("Salir");
+          System.out.println("Hasta la próxima!");
           break;
       }
     } while (opcion != 4);
@@ -281,7 +284,7 @@ public class FProject {
 
     for (int i = 0; i < tablero.length; i++) {
       for (int j = 0; j < tablero[i].length; j++) {
-        if (tablero[i][j] != '·' && tablero[i][j] != ' ' && tablero[i][j] != '|' && tablero[i][j] != '-') {
+        if ((tablero[i][j] >= 'A' && tablero[i][j] <= 'Z') || (tablero[i][j] >= 'a' && tablero[i][j] <= 'z') || (tablero[i][j] >= '0' && tablero[i][j] <= '9')) {
           maxJugadas++;
         }
       }
@@ -406,7 +409,9 @@ public class FProject {
         for (int j = 0; j < tablero[i].length; j++) {
           archivoPartidaGuardada.write(tablero[i][j]);
         }
+
         archivoPartidaGuardada.write("\n");
+
       }
 
       archivoPartidaGuardada.close();
@@ -442,19 +447,22 @@ public class FProject {
 
       Scanner archivoPartidaGuardada = new Scanner(new File(RUTA_ARCHIVO_PARTIDA_GUARDADA));
 
-      datos = new String[lineas]; // El máximo de filas del tablero es 11 (pongo 15 por si acaso)
-
+      
       // Leer el turno (0 o 1)
-      datos[0] = archivoPartidaGuardada.nextLine();
-
-      // Leer el tablero
-      int i = 0;
-      while (archivoPartidaGuardada.hasNextLine() && i < datos.length) {
-        datos[i] = archivoPartidaGuardada.nextLine();
-        i++;
+      if (!archivoPartidaGuardada.hasNextLine()) {
+        System.out.println("ERROR: El fichero de partida guardada está vacío.");
+      } else {
+        datos = new String[lineas]; // El máximo de filas del tablero es 11 (pongo 15 por si acaso)
+        datos[0] = archivoPartidaGuardada.nextLine();
+  
+        // Leer el tablero
+        int i = 1;
+        while (archivoPartidaGuardada.hasNextLine()) {
+          datos[i] = archivoPartidaGuardada.nextLine();
+          i++;
+        }
+        archivoPartidaGuardada.close();
       }
-
-      archivoPartidaGuardada.close();
     } catch (FileNotFoundException e) {
       System.out.println("ERROR: No se ha encontrado el fichero de partida guardada.");
     }
