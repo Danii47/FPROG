@@ -1,3 +1,4 @@
+package Otros;
 import java.util.Scanner;
 
 public class ExamenPapel {
