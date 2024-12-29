@@ -31,6 +31,7 @@ public class Ejercicio4 {
     // b)
     public static void cambiarEstado(regCIFRADO[] vectorRegistros, int clave) {
       for (int i = 0; i < vectorRegistros.length; i++) {
+        // Forma 1:
         if (vectorRegistros[i].clave == clave) {
           if (vectorRegistros[i].cifrada) {
             vectorRegistros[i].cadena = CesarASCII(vectorRegistros[i].cadena, -clave);
@@ -39,6 +40,14 @@ public class Ejercicio4 {
             vectorRegistros[i].cadena = CesarASCII(vectorRegistros[i].cadena, clave);
             vectorRegistros[i].cifrada = true;
           }
+        }
+        //
+        // Forma 2:
+        if (vectorRegistros[i].clave == clave) {
+          
+          vectorRegistros[i].cadena = CesarASCII(vectorRegistros[i].cadena, ((vectorRegistros[i].cifrada) ? -1 : 1) * clave);
+          vectorRegistros[i].cifrada = !vectorRegistros[i].cifrada;
+
         }
       }
     }
