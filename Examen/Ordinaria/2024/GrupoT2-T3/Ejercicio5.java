@@ -25,7 +25,7 @@ public class Ejercicio5 {
   }
   // Fin de la definición de la clase Nodo
 
-  public static void eliminarElemento(Nodo list, int pos) {
+  public static Nodo eliminarElemento(Nodo list, int pos) {
     // PRE: list es distinto de null y pos es mayor que 0 y un numero dentro del rango de la lista
     if (pos == 1) {
       // En caso de querer el primer nodo de la lista enlazada, simplemente list pasa a ser el segundo nodo, manteniendo el resto de referencias siguientes
@@ -44,6 +44,8 @@ public class Ejercicio5 {
         aux.sgte = aux.sgte.sgte;
       }
     }
+
+    return list;
     
   }
 }

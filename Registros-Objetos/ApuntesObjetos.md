@@ -222,7 +222,7 @@ System.out.println(cadenaCifrada); // Imprime: Krod
 
 > [!TIP]
 > Vale, este ejercicio de primeras puede parecer un poco lioso, desde que leemos la palabra **registro** ya nos podemos imaginar que nos están hablando de **objetos**. Siempre que veas la palabra **registro** en un ejercicio de **FPRO** (**únicamente** en **FPRO**), piensa en **objetos** y **clases**. En este caso, nos piden que creemos un **registro** llamado **regCIFRADO** (la clase) que tenga **tres campos** (tres **atributos**): uno para la **cadena**, un `String`, otro para la **clave de cifrado**, un `int` y otro para **determinar** si la cadena está **cifrada** o es la **original**, un valor `boolean`.
-> Empezaremos por esto, cuando nos dicen que definamos el tipo de datos **regCIFRADO**, debemos crear una **clase** llamada **regCIFRADO** con los tres atributos que nos piden. Además, es recomendable que creeis un **constructor** para esta clase que inicialice los atributos de la clase.
+> Empezaremos por esto, cuando nos dicen que definamos el tipo de datos **regCIFRADO**, debemos crear una **clase** llamada **regCIFRADO** con los tres atributos que nos piden. Además, es recomendable que creeis dos **constructores** para esta clase que inicialice los atributos de la clase, uno pasandoselos por parametro y otro que sean los valores predeterminados en caso de crearlo sin valores pasados por parametro.
 
 ```java
 // Definición de la clase regCIFRADO
@@ -234,17 +234,26 @@ public class regCIFRADO {
   boolean cifrado;
   // Fin de los atributos
 
-  // Constructor
+  // Constructor que inicializa los atributos de la clase con los valores pasados por parámetro
   public regCIFRADO(String cadena, int clave, boolean cifrado) {
     this.cadena = cadena;
     this.clave = clave;
     this.cifrado = cifrado;
   }
   // Fin del constructor
+
+  // Constructor que inicializa los atributos de la clase con valores predeterminados
+  public regCIFRADO() {
+    // Este método se considera una buena práctica para inicializar los atributos de la clase con valores predeterminados en caso de que no se pasen valores por parámetro
+    this.cadena = "";
+    this.clave = 0;
+    this.cifrado = false;
+  }
+  // Fin del constructor
 }
 ```
 
-Esto ya sería la **primera parte** del ejercicio, la **definición** de la **clase** **regCIFRADO** con sus **atributos** y **constructor**. Ahora, pasamos a la **segunda parte** del ejercicio.
+Esto ya sería la **primera parte** del ejercicio, la **definición** de la **clase** **regCIFRADO** con sus **atributos** y **constructores**. Ahora, pasamos a la **segunda parte** del ejercicio.
 
 > [!TIP]
 > Luego nos piden que creemos un **método** que, a partir de un **vector** de **registros** de tipo **regCIFRADO** y una **clave**, localice en el vector **todos** los elementos que tengan esa clave y, para cada uno de ellos, si la cadena está cifrada, la cambie por la cadena descifrada y si la cadena es la original, la cambie por la cadena cifrada. En ambos casos, **actualice** el campo de cifrado.
