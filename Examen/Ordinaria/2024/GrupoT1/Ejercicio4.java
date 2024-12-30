@@ -42,13 +42,15 @@ public class Ejercicio4 {
           }
         }
         //
+
         // Forma 2:
         if (vectorRegistros[i].clave == clave) {
-          
+
           vectorRegistros[i].cadena = CesarASCII(vectorRegistros[i].cadena, ((vectorRegistros[i].cifrada) ? -1 : 1) * clave);
           vectorRegistros[i].cifrada = !vectorRegistros[i].cifrada;
 
         }
+        //
       }
     }
 

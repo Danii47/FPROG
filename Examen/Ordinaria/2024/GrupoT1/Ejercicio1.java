@@ -6,7 +6,7 @@ Para cualquier apartado puede usar un apartado anterior, aunque no lo tenga resu
 a) [1 pto] Dado un vector de caracteres, cuyos valores solamente pueden ser 'o', 'x' o '-',
 devuelve un valor cierto o falso según el vector contenga o no tres 'o's o tres 'x's consecutivas.
 
-b) b) [0,5 ptos] Dada una matriz bidimensional de caracteres, con las mismas características del vector anterior, y un entero n,
+b) [0,5 ptos] Dada una matriz bidimensional de caracteres, con las mismas características del vector anterior, y un entero n,
 devuelve un valor cierto o falso según la fila n contenga o no tres 'o's o tres 'x's consecutivas.
 
 c) [0,5 ptos] Dada una matriz bidimensional de caracteres, con las mismas características del vector anterior, y un entero n,
