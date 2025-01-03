@@ -53,18 +53,4 @@ public class Ejercicio1 {
 
     return tresConsecutivas(columnaConvertidaAFila);
   }
-
-  // d)
-  public static double sumaDiagonalInclinada(double[][] matriz, int n) {
-    // PRE: que la matriz este rellena de elementos de tipo double y que el n sea un índice válido
-    double suma = 0;
-    int i = 0;
- 
-    while (i < matriz.length && n < matriz[i].length) {
-      suma += matriz[i][n];
-      i++;
-      n++;
-    }
-    return suma;
-  }
 }
