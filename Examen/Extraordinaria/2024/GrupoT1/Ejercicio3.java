@@ -14,7 +14,7 @@ public class Ejercicio3 {
   }
   
   public static void main(String[] args) {
-    System.out.println(contrapalindroma("hola")); // false
+    System.out.println(contrapalindroma("hola")); // true
     System.out.println(contrapalindroma("abba")); // false
     System.out.println(contrapalindroma("abca")); // false
     System.out.println(contrapalindroma("abcba")); // false
