@@ -1,6 +1,6 @@
-// Contrapalindroma
 
 public class Ejercicio3 {
+
   public static boolean contrapalindroma(String cadena) {
     // PRE: cadena != null
     if (cadena.length() <= 1) {

@@ -26,7 +26,7 @@ public class Ejercicio1 {
     int contador = 1;
     int i = 1;
     while (i < vector.length && !tresConsecutivas) {
-      if (vector[i] == vector[i - 1]) {
+      if (vector[i] == vector[i - 1] && vector[i] != '-') {
         contador++;
         if (contador == 3) {
           tresConsecutivas = true;
@@ -36,6 +36,15 @@ public class Ejercicio1 {
       }
       i++;
     }
+
+    // OTRA FORMA
+    // for (int j = 0; j < vector.length - 2; j++) {
+    //   if ((vector[j] == 'o' && vector[j + 1] == 'o' && vector[j + 2] == 'o') ||
+    //       vector[j] == 'x' && vector[j + 1] == 'x' && vector[j + 2] == 'x') {
+    //     tresConsecutivas = true;
+    //   }
+    // }
+
     return tresConsecutivas;
   }
 
